@@ -1,8 +1,8 @@
 package com.es.core.model.phone;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Phone {
@@ -27,7 +27,7 @@ public class Phone {
 
     private String os;
 
-    private Set<Color> colors = Collections.EMPTY_SET;
+    private Set<Color> colors = new HashSet<>();
 
     private String displayResolution;
 
