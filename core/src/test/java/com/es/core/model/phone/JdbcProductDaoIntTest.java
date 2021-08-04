@@ -25,13 +25,13 @@ public class JdbcProductDaoIntTest {
     private final String COUNT_PHONES_ROWS_QUERY = "select count(*) from phones";
 
     @Autowired
-    private PhoneDao phoneDao;
+    private JdbcPhoneDao phoneDao;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Test
     public void testGetExistingPhone() {
-        Optional<Phone> phoneFromDb = phoneDao.get(1000L);
+        Optional<Phone> phoneFromDb = phoneDao.get(2000L);
         Phone expected = initializePhone();
         assertTrue(phoneFromDb.isPresent());
         assertPhonesEquality(expected, phoneFromDb.get());
@@ -44,7 +44,7 @@ public class JdbcProductDaoIntTest {
 
     @Test
     public void testSavePhoneWithExistingId() {
-        Long phoneId = 1000L;
+        Long phoneId = 2000L;
         Phone phoneToSave = initializePhone();
         phoneToSave.setId(phoneId);
         phoneToSave.setBrand("Xiaomi");
@@ -63,7 +63,7 @@ public class JdbcProductDaoIntTest {
 
     @Test
     public void testSaveNewPhone() {
-        Long phoneId = 1003L;
+        Long phoneId = 2003L;
         Phone phoneToSave = initializePhone();
         phoneToSave.setId(phoneId);
         phoneToSave.setBrand("Xiaomi");
@@ -81,7 +81,7 @@ public class JdbcProductDaoIntTest {
 
     @Test
     public void testSaveExistingPhone() {
-        Long phoneId = 1000L;
+        Long phoneId = 2000L;
         Optional<Phone> phoneToSave = phoneDao.get(phoneId);
         assertTrue(phoneToSave.isPresent());
 
@@ -110,7 +110,7 @@ public class JdbcProductDaoIntTest {
 
     @Test(expected = InvalidParameterException.class)
     public void testSavePhoneWithExistingBrandModel() {
-        Long phoneId = 1042L;
+        Long phoneId = 2042L;
         Phone phoneToSave = initializePhone();
         phoneToSave.setId(phoneId);
         phoneDao.save(phoneToSave);
@@ -168,7 +168,7 @@ public class JdbcProductDaoIntTest {
 
     private Phone initializePhone() {
         Phone phone = new Phone();
-        phone.setId(1000L);
+        phone.setId(2000L);
         phone.setBrand("Alcatel");
         phone.setModel("Alcatel OT-117");
         phone.setPrice(null);

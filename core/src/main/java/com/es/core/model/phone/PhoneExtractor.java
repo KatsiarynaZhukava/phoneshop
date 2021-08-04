@@ -26,7 +26,7 @@ public class PhoneExtractor implements ResultSetExtractor<List<Phone>> {
                 phones.add(phone);
             }
 
-            if (id != 0 && resultSet.getString("code") != null) {
+            if (resultSet.getLong("colorId") != 0 && resultSet.getString("code") != null) {
                 Color color = new ColorRowMapper().mapRow(resultSet, resultSet.getRow());
                 phone.getColors().add(color);
             }
