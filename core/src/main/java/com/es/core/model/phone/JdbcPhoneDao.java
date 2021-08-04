@@ -10,7 +10,6 @@ import javax.annotation.Resource;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class JdbcPhoneDao implements PhoneDao {
@@ -68,10 +67,7 @@ public class JdbcPhoneDao implements PhoneDao {
         if (limit < 0) {
             throw new InvalidParameterException("Limit must be >= 0");
         }
-        List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT,
+        return jdbcTemplate.query(SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT,
                                                 new Object[] { offset, limit }, new PhoneExtractor());
-        return phones.stream()
-                     .filter(phone -> phone.getId() != null)
-                     .collect(Collectors.toList());
     }
 }
