@@ -22,11 +22,11 @@ public class PhoneExtractor implements ResultSetExtractor<List<Phone>> {
                                 .orElse(null);
             if (phone == null) {
                 phone = new BeanPropertyRowMapper<>(Phone.class).mapRow(resultSet, resultSet.getRow());
-                phone.setId(resultSet.getLong("id"));
+                phone.setId(id);
                 phones.add(phone);
             }
 
-            if (resultSet.getLong("colorId") != 0 || resultSet.getString("code") != null) {
+            if (id != 0 && resultSet.getString("code") != null) {
                 Color color = new ColorRowMapper().mapRow(resultSet, resultSet.getRow());
                 phone.getColors().add(color);
             }
