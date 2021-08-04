@@ -1,19 +1,22 @@
 package com.es.core.model.phone;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class JdbcPhoneDao implements PhoneDao {
-    private static final String SELECT_PHONES_WITH_COLORS_QUERY = "select * from phones " +
-                                                                  "left join phone2color on phones.id = phone2color.phoneId " +
-                                                                  "left join colors on phone2color.colorId = colors.id";
-    private static final String DELETE_PHONE2COLOR_QUERY = "delete * from phone2color where phoneId = ?";
+    private static final String SELECT_PHONES_QUERY = "select * from phones left join phone2color on phones.id = phone2color.phoneId left join colors on phone2color.colorId = colors.id";
+    private static final String SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT = "select * from ( select * from phones offset ? limit ?) ph left join phone2color on ph.id = phone2color.phoneId left join colors on phone2color.colorId = colors.id";
+    private static final String DELETE_PHONE2COLOR_QUERY = "delete from phone2color where phoneId = ?";
     private static final String INSERT_INTO_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values (?, ?)";
     private static final String INSERT_INTO_PHONES_QUERY = "insert into phones (brand, model, price, displaySizeInches, weightGr, lengthMm, widthMm, heightMm, announced, deviceType, os, displayResolution, pixelDensity, displayTechnology, backCameraMegapixels, frontCameraMegapixels, ramGb, internalStorageGb, batteryCapacityMah, talkTimeHours, standByTimeHours, bluetooth, positioning, imageUrl, description, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_PHONES_QUERY = "update phones set brand = ?, model = ?, price = ?, displaySizeInches = ?, weightGr = ?, lengthMm = ?, widthMm = ?, heightMm = ?, announced = ?, deviceType = ?, os = ?, displayResolution = ?, pixelDensity = ?, displayTechnology = ?, backCameraMegapixels = ?, frontCameraMegapixels = ?, ramGb = ?, internalStorageGb = ?, batteryCapacityMah = ?, talkTimeHours = ?, standByTimeHours = ?, bluetooth = ?, positioning = ?, imageUrl = ?, description = ? where id = ?";
@@ -22,7 +25,8 @@ public class JdbcPhoneDao implements PhoneDao {
     private JdbcTemplate jdbcTemplate;
 
     public Optional<Phone> get( final Long key ) {
-        List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_WITH_COLORS_QUERY + " WHERE phones.id = ?", new Object[] { key }, new PhoneExtractor());
+        List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_QUERY + " where phones.id = ?",
+                                                new Object[] { key }, new PhoneExtractor());
         return phones.stream().findFirst();
     }
 
@@ -35,19 +39,37 @@ public class JdbcPhoneDao implements PhoneDao {
                                          phone.getBatteryCapacityMah(), phone.getTalkTimeHours(), phone.getStandByTimeHours(),
                                          phone.getBluetooth(), phone.getPositioning(), phone.getImageUrl(), phone.getDescription(), phone.getId() };
         Optional<Phone> foundPhone = get(phone.getId());
-        if (foundPhone.isPresent()) {
-            jdbcTemplate.update(UPDATE_PHONES_QUERY, fields);
-            jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
-        } else {
-            jdbcTemplate.update(INSERT_INTO_PHONES_QUERY, fields);
+        try {
+            if (foundPhone.isPresent()) {
+                jdbcTemplate.update(UPDATE_PHONES_QUERY, fields);
+                jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
+            } else {
+                if (phone.getId() != null) {
+                    jdbcTemplate.update(INSERT_INTO_PHONES_QUERY, fields);
+                } else {
+                    SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("phones").usingGeneratedKeyColumns("id");
+                    Number id = simpleJdbcInsert.executeAndReturnKey(new BeanPropertySqlParameterSource(phone));
+                    phone.setId(id.longValue());
+                }
+            }
+        } catch (DuplicateKeyException e) {
+            throw new InvalidParameterException("Invalid parameter: a phone with such brand and model value combination already exists");
         }
+
         for (Color color: phone.getColors()) {
             jdbcTemplate.update(INSERT_INTO_PHONE2COLOR_QUERY, phone.getId(), color.getId());
         }
     }
 
     public List<Phone> findAll( int offset, int limit ) {
-        List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_WITH_COLORS_QUERY + " OFFSET ? LIMIT ?", new Object[] { offset, limit }, new PhoneExtractor());
+        if (offset < 0) {
+            throw new InvalidParameterException("Offset must be >= 0");
+        }
+        if (limit < 0) {
+            throw new InvalidParameterException("Limit must be >= 0");
+        }
+        List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT,
+                                                new Object[] { offset, limit }, new PhoneExtractor());
         return phones.stream()
                      .filter(phone -> phone.getId() != null)
                      .collect(Collectors.toList());

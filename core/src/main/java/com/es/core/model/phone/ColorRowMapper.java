@@ -18,14 +18,12 @@ public class ColorRowMapper implements RowMapper<Color> {
         String code = resultSet.getString("code");
         Optional<Color> maybeColor = existingColors.stream()
                                                    .filter(color -> color.getId() == colorId)
-                                                   .filter(color -> color.getCode() == code)
+                                                   .filter(color -> color.getCode().equals(code))
                                                    .findFirst();
         if (maybeColor.isPresent()) {
             return maybeColor.get();
         } else {
-            Color color = new Color();
-            color.setId(colorId);
-            color.setCode(resultSet.getString("code"));
+            Color color = new Color(colorId, code);
             existingColors.add(color);
             return color;
         }
