@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class JdbcPhoneDao implements PhoneDao {
 
     public Optional<Phone> get( final Long key ) {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_QUERY + " where phones.id = ?",
-                                                new Object[] { key }, new PhoneExtractor());
+                                                new Object[] { key }, new PhoneWithColorsExtractor());
         return phones.stream().findFirst();
     }
 
@@ -55,19 +56,18 @@ public class JdbcPhoneDao implements PhoneDao {
             throw new InvalidParameterException("Invalid parameter: a phone with such brand and model value combination already exists");
         }
 
+        List<Object[]> batch = new ArrayList<>();
         for (Color color: phone.getColors()) {
-            jdbcTemplate.update(INSERT_INTO_PHONE2COLOR_QUERY, phone.getId(), color.getId());
+            Object[] values = new Object[] { phone.getId(), color.getId() };
+            batch.add(values);
         }
+        jdbcTemplate.batchUpdate(INSERT_INTO_PHONE2COLOR_QUERY, batch);
     }
 
     public List<Phone> findAll( int offset, int limit ) {
-        if (offset < 0) {
-            throw new InvalidParameterException("Offset must be >= 0");
-        }
-        if (limit < 0) {
-            throw new InvalidParameterException("Limit must be >= 0");
-        }
+        if (offset < 0) throw new InvalidParameterException("Offset must be >= 0");
+        if (limit < 0) throw new InvalidParameterException("Limit must be >= 0");
         return jdbcTemplate.query(SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT,
-                                                new Object[] { offset, limit }, new PhoneExtractor());
+                                  new Object[] { offset, limit }, new PhoneWithColorsExtractor());
     }
 }
