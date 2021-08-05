@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PhoneExtractor implements ResultSetExtractor<List<Phone>> {
+public class PhoneWithColorsExtractor implements ResultSetExtractor<List<Phone>> {
 
     @Override
     public List<Phone> extractData( final ResultSet resultSet ) throws SQLException, DataAccessException {
