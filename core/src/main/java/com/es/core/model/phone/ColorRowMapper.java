@@ -1,31 +1,23 @@
 package com.es.core.model.phone;
 
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
+@Component
 public class ColorRowMapper implements RowMapper<Color> {
-    private static final Set<Color> existingColors = Collections.synchronizedSet(new HashSet<>());
+    private static final Map<Long, Color> existingColors = Collections.synchronizedMap(new HashMap<>());
 
     @Override
     public Color mapRow( final ResultSet resultSet, int rowNumber ) throws SQLException {
         long colorId = resultSet.getLong("colorId");
-        String code = resultSet.getString("code");
-        Optional<Color> maybeColor = existingColors.stream()
-                                                   .filter(color -> color.getId() == colorId)
-                                                   .filter(color -> color.getCode().equals(code))
-                                                   .findFirst();
-        if (maybeColor.isPresent()) {
-            return maybeColor.get();
-        } else {
-            Color color = new Color(colorId, code);
-            existingColors.add(color);
-            return color;
-        }
+        Color color = existingColors.getOrDefault(colorId, new Color(colorId, resultSet.getString("code")));
+        existingColors.putIfAbsent(colorId, color);
+        return color;
     }
 }
