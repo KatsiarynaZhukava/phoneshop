@@ -9,7 +9,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
-import java.security.InvalidParameterException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -108,7 +107,7 @@ public class JdbcProductDaoIntTest {
         assertEquals(oldPhonesRecordsNumber + 1, newPhonesRecordsNumber);
     }
 
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testSavePhoneWithExistingBrandModel() {
         Long phoneId = 2042L;
         Phone phoneToSave = initializePhone();
@@ -121,12 +120,12 @@ public class JdbcProductDaoIntTest {
         assertEquals(phoneDao.findAll(0, Integer.MAX_VALUE).size(), NUMBER_OF_PHONES_IN_TEST_DB);
     }
 
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testFindAllNegativeOffset() {
         phoneDao.findAll(-1, Integer.MAX_VALUE);
     }
 
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testFindAllNegativeLimit() {
         phoneDao.findAll(0, -1);
     }
