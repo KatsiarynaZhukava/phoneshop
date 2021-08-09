@@ -5,19 +5,17 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ColorRowMapper implements RowMapper<Color> {
-    private static final Map<Long, Color> existingColors = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Long, Color> existingColors = new ConcurrentHashMap<>();
 
     @Override
     public Color mapRow( final ResultSet resultSet, int rowNumber ) throws SQLException {
-        long colorId = resultSet.getLong("colorId");
-        Color color = existingColors.getOrDefault(colorId, new Color(colorId, resultSet.getString("code")));
-        existingColors.putIfAbsent(colorId, color);
-        return color;
+        Long id = resultSet.getLong("colors.id");
+        String code = resultSet.getString("code");
+        return existingColors.computeIfAbsent(id, key -> new Color(key, code));
     }
 }

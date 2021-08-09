@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,18 +27,25 @@ public class JdbcPhoneDao implements PhoneDao {
     @Resource
     private JdbcTemplate jdbcTemplate;
     @Resource
-    private SimpleJdbcInsert simpleJdbcInsert;
-    @Resource
     private PhoneWithColorsExtractor phoneExtractor;
     @Resource
     private SingleColumnRowMapper<Long> longSingleColumnRowMapper;
+    @Resource
+    private SimpleJdbcInsert simpleJdbcInsert;
 
+    @PostConstruct
+    private void initializeSimpleJdbcInsert() {
+        simpleJdbcInsert.withTableName("phones").usingGeneratedKeyColumns("id").compile();
+    }
+
+    @Override
     public Optional<Phone> get( final Long key ) {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_QUERY + " where phones.id = ?",
-                                                    new Object[] { key }, phoneExtractor);
+                                                new Object[] { key }, phoneExtractor);
         return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
     }
 
+    @Override
     @Transactional
     public void save( final Phone phone ) {
         Object[] fields = new Object[] { phone.getBrand(), phone.getModel(), phone.getPrice(), phone.getDisplaySizeInches(),
@@ -48,17 +56,17 @@ public class JdbcPhoneDao implements PhoneDao {
                                          phone.getBatteryCapacityMah(), phone.getTalkTimeHours(), phone.getStandByTimeHours(),
                                          phone.getBluetooth(), phone.getPositioning(), phone.getImageUrl(), phone.getDescription(), phone.getId() };
         try {
-            if (exists(phone.getId())) {
-                jdbcTemplate.update(UPDATE_PHONES_QUERY, fields);
-                jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
-            } else {
-                if (phone.getId() != null) {
-                    jdbcTemplate.update(INSERT_INTO_PHONES_QUERY, fields);
+            Long id = phone.getId();
+            if (id != null) {
+                if (exists(id)) {
+                    jdbcTemplate.update(UPDATE_PHONES_QUERY, fields);
+                    jdbcTemplate.update(DELETE_PHONE2COLOR_QUERY, phone.getId());
                 } else {
-                    simpleJdbcInsert.withTableName("phones").usingGeneratedKeyColumns("id");
-                    Number id = simpleJdbcInsert.executeAndReturnKey(new BeanPropertySqlParameterSource(phone));
-                    phone.setId(id.longValue());
+                    jdbcTemplate.update(INSERT_INTO_PHONES_QUERY, fields);
                 }
+            } else {
+                id = simpleJdbcInsert.executeAndReturnKey(new BeanPropertySqlParameterSource(phone)).longValue();
+                phone.setId(id);
             }
         } catch (DuplicateKeyException e) {
             throw new IllegalArgumentException("Illegal argument: a phone with such a brand and model value combination already exists");
@@ -72,6 +80,7 @@ public class JdbcPhoneDao implements PhoneDao {
         jdbcTemplate.batchUpdate(INSERT_INTO_PHONE2COLOR_QUERY, batch);
     }
 
+    @Override
     public List<Phone> findAll( int offset, int limit ) {
         if (offset < 0) throw new IllegalArgumentException("Offset must be >= 0");
         if (limit < 0) throw new IllegalArgumentException("Limit must be >= 0");
@@ -79,7 +88,8 @@ public class JdbcPhoneDao implements PhoneDao {
                                   new Object[] { offset, limit }, phoneExtractor);
     }
 
-    private boolean exists( Long id ) {
+    @Override
+    public boolean exists( Long id ) {
         return !jdbcTemplate.query(SELECT_PHONE_BY_ID_QUERY, new Object[] { id }, longSingleColumnRowMapper)
                             .isEmpty();
     }
