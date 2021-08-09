@@ -34,6 +34,6 @@ public class PhoneWithColorsExtractor implements ResultSetExtractor<List<Phone>>
                 Objects.requireNonNull(phone).getColors().add(color);
             }
         }
-        return new ArrayList(phones.values());
+        return new ArrayList<>(phones.values());
     }
 }

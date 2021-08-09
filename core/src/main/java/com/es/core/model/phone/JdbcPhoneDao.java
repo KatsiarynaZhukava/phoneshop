@@ -30,11 +30,11 @@ public class JdbcPhoneDao implements PhoneDao {
     private PhoneWithColorsExtractor phoneExtractor;
     @Resource
     private SingleColumnRowMapper<Long> longSingleColumnRowMapper;
-    @Resource
     private SimpleJdbcInsert simpleJdbcInsert;
 
     @PostConstruct
     private void initializeSimpleJdbcInsert() {
+        simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         simpleJdbcInsert.withTableName("phones").usingGeneratedKeyColumns("id").compile();
     }
 
