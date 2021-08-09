@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:context/applicationContext-core-test.xml")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class JdbcProductDaoIntTest {
+public class JdbcPhoneDaoIntTest {
     private final int NUMBER_OF_PHONES_IN_TEST_DB = 3;
     private final String COUNT_PHONE2COLOR_ROWS_QUERY = "select count(*) from phone2color";
     private final String COUNT_PHONES_ROWS_QUERY = "select count(*) from phones";
@@ -95,7 +95,7 @@ public class JdbcProductDaoIntTest {
     }
 
     @Test
-    public void testSavePhoneWithNullId() {
+    public void testSavePhoneWithNullIdMultipleTimes() {
         Phone phoneToSave = initializePhone();
         phoneToSave.setId(null);
         phoneToSave.setBrand("Xiaomi");
@@ -103,8 +103,12 @@ public class JdbcProductDaoIntTest {
 
         int oldPhonesRecordsNumber = jdbcTemplate.queryForObject(COUNT_PHONES_ROWS_QUERY, Integer.class);
         phoneDao.save(phoneToSave);
+
+        phoneToSave.setModel("Xiaomi Redmi 9C");
+        phoneToSave.setId(null);
+        phoneDao.save(phoneToSave);
         int newPhonesRecordsNumber = jdbcTemplate.queryForObject(COUNT_PHONES_ROWS_QUERY, Integer.class);
-        assertEquals(oldPhonesRecordsNumber + 1, newPhonesRecordsNumber);
+        assertEquals(oldPhonesRecordsNumber + 2, newPhonesRecordsNumber);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -134,6 +138,12 @@ public class JdbcProductDaoIntTest {
     public void testFindAllOffsetEqualsNumberOfPhones() {
         assertEquals(phoneDao.findAll(NUMBER_OF_PHONES_IN_TEST_DB, Integer.MAX_VALUE).size(), 0);
     }
+
+    @Test
+    public void testCheckExistingPhoneExistence() { assertTrue(phoneDao.exists(2000L)); }
+
+    @Test
+    public void testCheckNonexistentPhoneExistence() { assertFalse(phoneDao.exists(-1L)); }
 
     private void assertPhonesEquality( final Phone expected, final Phone actual ) {
         assertEquals(expected.getId(), actual.getId());

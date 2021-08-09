@@ -8,10 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class PhoneWithColorsExtractor implements ResultSetExtractor<List<Phone>> {
@@ -25,13 +22,20 @@ public class PhoneWithColorsExtractor implements ResultSetExtractor<List<Phone>>
         Map<Long, Phone> phones = new HashMap<>();
         while (resultSet.next()) {
             Long id = resultSet.getLong("id");
-            Phone phone = phones.getOrDefault(id, phoneBeanPropertyRowMapper.mapRow(resultSet, resultSet.getRow()));
-            phone.setId(id);
-            phones.put(id, phone);
+            Phone phone = phones.computeIfAbsent(id, key -> {
+                Phone constructedPhone = null;
+                try {
+                    constructedPhone = phoneBeanPropertyRowMapper.mapRow(resultSet, resultSet.getRow());
+                    constructedPhone.setId(key);
+                } catch (SQLException e) {
+
+                }
+                return constructedPhone;
+            });
 
             if (resultSet.getLong("colorId") != 0 && resultSet.getString("code") != null) {
                 Color color = colorRowMapper.mapRow(resultSet, resultSet.getRow());
-                phone.getColors().add(color);
+                Objects.requireNonNull(phone).getColors().add(color);
             }
         }
         return new ArrayList(phones.values());
