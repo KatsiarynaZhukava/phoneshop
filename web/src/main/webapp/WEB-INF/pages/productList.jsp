@@ -10,33 +10,36 @@
   <script src="<c:url value="/resources/scripts/addToCart.js"/>"></script>
 </head>
 <body>
-  <div class="float-left upper left">
-    <button id="cartBtn" class="btn btn-primary">
-      My cart: ${cart.totalQuantity} items $
-      <c:choose>
-        <c:when test="${cart.totalCost != null}">
-          ${cart.totalCost}
-        </c:when>
-        <c:otherwise>
-          0
-        </c:otherwise>
-      </c:choose>
-    </button>
+  <div class="header-container">
+    <div class="float-left">
+      <button id="cartBtn" class="btn btn-primary">
+        My cart: ${cart.totalQuantity} items $
+        <c:choose>
+          <c:when test="${cart.totalCost != null}">
+            ${cart.totalCost}
+          </c:when>
+          <c:otherwise>
+            0
+          </c:otherwise>
+        </c:choose>
+      </button>
+    </div>
+
+    <div class="float-right">
+      <form action = "${pageContext.request.contextPath}/productList">
+        <div class="row">
+          <div class="col">
+            <input name="searchQuery" value="${searchQuery}" class="form-control search-input">
+          </div>
+          <div class="col">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 
-  <div class="float-right upper right">
-    <form action = "${pageContext.request.contextPath}/productList">
-      <div class="row">
-        <div class="col">
-          <input name="searchQuery" value="${searchQuery}" class="form-control search-input">
-        </div>
-        <div class="col">
-          <button type="submit" class="btn btn-outline-primary">Search</button>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div>
+  <div class="content">
     <table class="table table-hover">
       <thead>
         <tr>
@@ -93,6 +96,7 @@
             <td>
               <input name="requestedQuantity" class="form-control" style="${phone.price == null ? 'display: none' : ''}">
               <input id="phoneId" value="${phone.id}" type="hidden">
+                <p id="message${phone.id}" class="message"></p>
             </td>
             <td>
               <input value="Add to cart" onclick="addToCart(this.form)"
@@ -106,7 +110,7 @@
 
   <c:choose>
     <c:when test="${phones == null || phones.size() == 0}">
-      <p style="text-align: center">No items found</p>
+      <p class="not-found">No items found</p>
     </c:when>
     <c:otherwise>
       <c:set var="displayedPagesNumber" value="8"/>

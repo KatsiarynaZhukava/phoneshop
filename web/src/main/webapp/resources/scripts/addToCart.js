@@ -12,8 +12,13 @@ function addToCart(form) {
             'Content-Type': 'application/json'
         },
         contentType: "application/json",
-        success: (function(data) {
+        success: function(data) {
             $("#cartBtn").text("My cart: " + data.totalQuantity + " items $ " + data.totalCost.toFixed(1));
-        })
+            $(`#message${phoneId}`).text("");
+            form.elements["requestedQuantity"].value = ""
+        },
+        error: function(data) {
+            $(`#message${phoneId}`).text(JSON.parse(data.responseText).message);
+        }
     });
 }
