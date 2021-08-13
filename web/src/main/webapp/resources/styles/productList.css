@@ -1,12 +1,27 @@
-.upper {
-    margin-top: 20px;
-}
-.left {
-    margin-left: 20px;
-}
 .right {
     margin-right: 20px;
 }
 .search-input {
     min-width: 300px;
+}
+.message {
+    color: #af3936;
+    margin-top: 10px;
+}
+.not-found {
+    text-align: center;
+}
+.header-container {
+    width: 100%;
+    padding: 20px;
+    margin: 0;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+}
+table {
+    margin-top: 100px;
 }

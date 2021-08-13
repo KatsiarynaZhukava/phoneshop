@@ -1,6 +1,4 @@
-package com.es.phoneshop.web.controller.dto;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+package com.es.phoneshop.web.controller.dto.input;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -10,6 +8,7 @@ public class CartItemInputDto {
     private Long phoneId;
     @NotNull(message = "Quantity should not be null")
     @Min(value = 1 , message = "Quantity should be > 0")
+
     private Long requestedQuantity;
 
     public CartItemInputDto() { }

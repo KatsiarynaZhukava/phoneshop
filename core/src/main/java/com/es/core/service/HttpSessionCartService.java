@@ -18,7 +18,6 @@ import java.util.Map;
 @SessionScope
 public class HttpSessionCartService implements CartService {
     public static final String PHONE_NOT_FOUND_BY_ID = "Phone not found by id: {0}";
-    public static final String PHONE_NOT_FOUND_BY_ID_IN_CART = "No phone with id {0} found in cart";
     public static final String STOCK_NOT_FOUND_BY_PHONE_ID = "Stock value not found by phoneId {0}";
 
     @Resource
@@ -43,7 +42,7 @@ public class HttpSessionCartService implements CartService {
                              .orElseThrow(NotFoundException.supplier(STOCK_NOT_FOUND_BY_PHONE_ID, phoneId))
                              .getStock();
         if (stock < (quantityOfItemsInCart + requestedQuantity)) {
-            throw new OutOfStockException(phone, quantityOfItemsInCart + requestedQuantity, stock, quantityOfItemsInCart);
+            throw new OutOfStockException( quantityOfItemsInCart + requestedQuantity, stock );
         }
         cartItems.remove(phoneId);
         cartItems.put(phoneId, new CartItem(phone, requestedQuantity + quantityOfItemsInCart));

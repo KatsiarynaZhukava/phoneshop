@@ -25,7 +25,8 @@ public class JdbcPhoneDao implements PhoneDao {
     private static final String INSERT_INTO_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values (?, ?)";
     private static final String INSERT_INTO_PHONES_QUERY = "insert into phones (brand, model, price, displaySizeInches, weightGr, lengthMm, widthMm, heightMm, announced, deviceType, os, displayResolution, pixelDensity, displayTechnology, backCameraMegapixels, frontCameraMegapixels, ramGb, internalStorageGb, batteryCapacityMah, talkTimeHours, standByTimeHours, bluetooth, positioning, imageUrl, description, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_PHONES_QUERY = "update phones set brand = ?, model = ?, price = ?, displaySizeInches = ?, weightGr = ?, lengthMm = ?, widthMm = ?, heightMm = ?, announced = ?, deviceType = ?, os = ?, displayResolution = ?, pixelDensity = ?, displayTechnology = ?, backCameraMegapixels = ?, frontCameraMegapixels = ?, ramGb = ?, internalStorageGb = ?, batteryCapacityMah = ?, talkTimeHours = ?, standByTimeHours = ?, bluetooth = ?, positioning = ?, imageUrl = ?, description = ? where id = ?";
-    private static final String COUNT_PHONES_WITH_POSITIVE_STOCK_QUERY = "select count(*) from phones where id in (select phoneId from stocks where stock > 0)";
+    private static final String COUNT_PHONES_QUERY_PART = "select count(*) from phones ";
+    private static final String POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART = "where (id in (select phoneId from stocks where stock > 0)) and (price is not null)";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -109,7 +110,7 @@ public class JdbcPhoneDao implements PhoneDao {
 
     @Override
     public long getTotalNumber() {
-        return jdbcTemplate.queryForObject(COUNT_PHONES_WITH_POSITIVE_STOCK_QUERY, Long.TYPE);
+        return jdbcTemplate.queryForObject(COUNT_PHONES_QUERY_PART + POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART, Long.TYPE);
     }
 
     @Override
@@ -117,7 +118,7 @@ public class JdbcPhoneDao implements PhoneDao {
         if (searchQuery == null || searchQuery.isEmpty()) {
             return getTotalNumber();
         } else {
-            String sqlQuery = COUNT_PHONES_WITH_POSITIVE_STOCK_QUERY + " and (lower(brand) like lower(:searchQuery) or lower(model) like lower(:searchQuery))";
+            String sqlQuery = COUNT_PHONES_QUERY_PART + POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART + " and (lower(brand) like lower(:searchQuery) or lower(model) like lower(:searchQuery))";
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("searchQuery", searchQuery);
             return namedParameterJdbcTemplate.queryForObject(sqlQuery, parameters, Long.TYPE);
@@ -126,13 +127,12 @@ public class JdbcPhoneDao implements PhoneDao {
 
     private void validateOffsetLimit( long offset, long limit ) {
         if (offset < 0) throw new IllegalArgumentException("Offset must be >= 0");
-        if (limit < 0) throw new IllegalArgumentException("Limit must be >= 0");
+        if (limit <= 0) throw new IllegalArgumentException("Limit must be > 0");
     }
 
 
     private String formSqlQuery( final String searchQuery, final String sortField, final String sortOrder ) {
-        StringBuilder sqlQuery = new StringBuilder("select * from (select * from phones " +
-                "where id in (select phoneId from stocks where stock > 0)");
+        StringBuilder sqlQuery = new StringBuilder("select * from (select * from phones " + POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART);
         if (searchQuery != null && !searchQuery.isEmpty()) {
             sqlQuery.append(" and (lower(brand) like lower(:searchQuery) or lower(model) like lower(:searchQuery))");
         }
