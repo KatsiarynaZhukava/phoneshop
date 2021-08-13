@@ -1,15 +1,18 @@
-package com.es.core.model.phone;
+package com.es.core.dao;
 
+import com.es.core.model.phone.Color;
+import com.es.core.model.phone.Phone;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,13 +22,13 @@ import static org.junit.Assert.*;
 @ContextConfiguration("classpath:context/applicationContext-core-test.xml")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class JdbcPhoneDaoIntTest {
-    private final int NUMBER_OF_PHONES_IN_TEST_DB = 3;
+    private final int NUMBER_OF_PHONES_IN_TEST_DB = 5;
     private final String COUNT_PHONE2COLOR_ROWS_QUERY = "select count(*) from phone2color";
     private final String COUNT_PHONES_ROWS_QUERY = "select count(*) from phones";
 
-    @Autowired
+    @Resource
     private JdbcPhoneDao phoneDao;
-    @Autowired
+    @Resource
     private JdbcTemplate jdbcTemplate;
 
     @Test
@@ -62,7 +65,7 @@ public class JdbcPhoneDaoIntTest {
 
     @Test
     public void testSaveNewPhone() {
-        Long phoneId = 2003L;
+        Long phoneId = 3000L;
         Phone phoneToSave = initializePhone();
         phoneToSave.setId(phoneId);
         phoneToSave.setBrand("Xiaomi");
@@ -140,6 +143,64 @@ public class JdbcPhoneDaoIntTest {
     }
 
     @Test
+    public void testFindAllQueryNullOrderByBrandDesc() {
+        List<Phone> phones = phoneDao.findAll(null, "brand", "desc", 0, Integer.MAX_VALUE);
+        assertEquals(4, phones.size());
+        assertEquals(2003L, phones.get(0).getId().longValue());
+        long id = phones.get(1).getId();
+        assertTrue(id == 2000L || id == 2001L || id == 2002L);
+        id = phones.get(2).getId();
+        assertTrue(id == 2000L || id == 2001L || id == 2002L);
+        id = phones.get(3).getId();
+        assertTrue(id == 2000L || id == 2001L || id == 2002L);
+    }
+
+    @Test
+    public void testFindAllQueryNullOrderByModelAsc() {
+        List<Phone> phonesAscendingOrder = phoneDao.findAll(null, "model", "asc", 0, Integer.MAX_VALUE);
+        assertEquals(4, phonesAscendingOrder.size());
+        assertEquals(2000L, phonesAscendingOrder.get(0).getId().longValue());
+        assertEquals(2002L, phonesAscendingOrder.get(1).getId().longValue());
+        assertEquals(2001L, phonesAscendingOrder.get(2).getId().longValue());
+        assertEquals(2003L, phonesAscendingOrder.get(3).getId().longValue());
+        List<Phone> phonesDefaultSortOrder = phoneDao.findAll(null, "model", null, 0, Integer.MAX_VALUE);
+        assertEquals(4, phonesDefaultSortOrder.size());
+        for (int i = 0; i < phonesAscendingOrder.size(); i++) {
+            assertEquals(phonesAscendingOrder.get(i).getId().longValue(),
+                         phonesDefaultSortOrder.get(i).getId().longValue());
+        }
+    }
+
+    @Test
+    public void testFindAllQueryNullOrderByPriceDesc() {
+        List<Phone> phones = phoneDao.findAll(null, "price", "desc", 0, Integer.MAX_VALUE);
+        assertEquals(4, phones.size());
+        assertEquals(2003L, phones.get(0).getId().longValue());
+        assertEquals(2001L, phones.get(1).getId().longValue());
+        assertEquals(2002L, phones.get(2).getId().longValue());
+        assertEquals(2000L, phones.get(3).getId().longValue());
+    }
+
+    @Test
+    public void testFindAllQueryNullOrderByDisplaySizeAsc() {
+        List<Phone> phones = phoneDao.findAll(null, "displaySizeInches", "asc", 0, Integer.MAX_VALUE);
+        assertEquals(4, phones.size());
+        assertEquals(2000L, phones.get(0).getId().longValue());
+        assertEquals(2002L, phones.get(1).getId().longValue());
+        assertEquals(2001L, phones.get(2).getId().longValue());
+        assertEquals(2003L, phones.get(3).getId().longValue());
+    }
+
+    @Test
+    public void testFindAllQueryNotNull() {
+        List<Phone> phones = phoneDao.findAll("Alcatel", null, null, 0, Integer.MAX_VALUE);
+        assertEquals(3, phones.size());
+        assertEquals(2000L, phones.get(0).getId().longValue());
+        assertEquals(2001L, phones.get(1).getId().longValue());
+        assertEquals(2002L, phones.get(2).getId().longValue());
+    }
+
+    @Test
     public void testCheckExistingPhoneExistence() { assertTrue(phoneDao.exists(2000L)); }
 
     @Test
@@ -180,7 +241,7 @@ public class JdbcPhoneDaoIntTest {
         phone.setId(2000L);
         phone.setBrand("Alcatel");
         phone.setModel("Alcatel OT-117");
-        phone.setPrice(null);
+        phone.setPrice(new BigDecimal("200.0"));
         phone.setDisplaySizeInches(new BigDecimal("1.3"));
         phone.setWeightGr(null);
         phone.setLengthMm(new BigDecimal("105.0"));

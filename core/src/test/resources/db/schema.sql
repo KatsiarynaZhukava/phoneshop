@@ -1,5 +1,6 @@
 drop table if exists phone2color;
 drop table if exists colors;
+drop table if exists stocks;
 drop table if exists phones;
 
 create table colors (
@@ -43,4 +44,12 @@ create table phone2color (
   colorId BIGINT,
   CONSTRAINT FK_phone2color_phoneId FOREIGN KEY (phoneId) REFERENCES phones (id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT FK_phone2color_colorId FOREIGN KEY (colorId) REFERENCES colors (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+create table stocks (
+  phoneId BIGINT NOT NULL,
+  stock SMALLINT NOT NULL,
+  reserved SMALLINT NOT NULL,
+  UNIQUE (phoneId),
+  CONSTRAINT FK_stocks_phoneId FOREIGN KEY (phoneId) REFERENCES phones (id) ON DELETE CASCADE ON UPDATE CASCADE
 );

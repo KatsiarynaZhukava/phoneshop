@@ -1,5 +1,6 @@
-package com.es.core.model.phone;
+package com.es.core.util;
 
+import com.es.core.model.phone.Color;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 

@@ -1,18 +1,20 @@
-package com.es.core.model.phone;
+package com.es.core.dao;
 
+import com.es.core.model.phone.Color;
+import com.es.core.model.phone.Phone;
+import com.es.core.util.PhoneWithColorsExtractor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class JdbcPhoneDao implements PhoneDao {
@@ -23,9 +25,12 @@ public class JdbcPhoneDao implements PhoneDao {
     private static final String INSERT_INTO_PHONE2COLOR_QUERY = "insert into phone2color (phoneId, colorId) values (?, ?)";
     private static final String INSERT_INTO_PHONES_QUERY = "insert into phones (brand, model, price, displaySizeInches, weightGr, lengthMm, widthMm, heightMm, announced, deviceType, os, displayResolution, pixelDensity, displayTechnology, backCameraMegapixels, frontCameraMegapixels, ramGb, internalStorageGb, batteryCapacityMah, talkTimeHours, standByTimeHours, bluetooth, positioning, imageUrl, description, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_PHONES_QUERY = "update phones set brand = ?, model = ?, price = ?, displaySizeInches = ?, weightGr = ?, lengthMm = ?, widthMm = ?, heightMm = ?, announced = ?, deviceType = ?, os = ?, displayResolution = ?, pixelDensity = ?, displayTechnology = ?, backCameraMegapixels = ?, frontCameraMegapixels = ?, ramGb = ?, internalStorageGb = ?, batteryCapacityMah = ?, talkTimeHours = ?, standByTimeHours = ?, bluetooth = ?, positioning = ?, imageUrl = ?, description = ? where id = ?";
+    private static final String COUNT_PHONES_WITH_POSITIVE_STOCK_QUERY = "select count(*) from phones where id in (select phoneId from stocks where stock > 0)";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
+    @Resource
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Resource
     private PhoneWithColorsExtractor phoneExtractor;
     @Resource
@@ -81,16 +86,75 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
-    public List<Phone> findAll( int offset, int limit ) {
-        if (offset < 0) throw new IllegalArgumentException("Offset must be >= 0");
-        if (limit < 0) throw new IllegalArgumentException("Limit must be >= 0");
+    public List<Phone> findAll( long offset, long limit ) {
+        validateOffsetLimit(offset, limit);
         return jdbcTemplate.query(SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT,
-                                  new Object[] { offset, limit }, phoneExtractor);
+                                                new Object[] { offset, limit }, phoneExtractor);
+    }
+
+    @Override
+    public List<Phone> findAll( final String searchQuery, final String sortField,
+                                final String sortOrder, long offset, long limit ) {
+        validateOffsetLimit(offset, limit);
+        String sqlQuery = formSqlQuery(searchQuery, sortField, sortOrder);
+        Map<String, Object> sqlParameters = fillSqlParameters(searchQuery, sortField, offset, limit);
+        return namedParameterJdbcTemplate.query(sqlQuery, sqlParameters, phoneExtractor);
     }
 
     @Override
     public boolean exists( Long id ) {
         return !jdbcTemplate.query(SELECT_PHONE_BY_ID_QUERY, new Object[] { id }, longSingleColumnRowMapper)
                             .isEmpty();
+    }
+
+    @Override
+    public long getTotalNumber() {
+        return jdbcTemplate.queryForObject(COUNT_PHONES_WITH_POSITIVE_STOCK_QUERY, Long.TYPE);
+    }
+
+    @Override
+    public long getTotalNumber( final String searchQuery ) {
+        if (searchQuery == null || searchQuery.isEmpty()) {
+            return getTotalNumber();
+        } else {
+            String sqlQuery = COUNT_PHONES_WITH_POSITIVE_STOCK_QUERY + " and (lower(brand) like lower(:searchQuery) or lower(model) like lower(:searchQuery))";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("searchQuery", searchQuery);
+            return namedParameterJdbcTemplate.queryForObject(sqlQuery, parameters, Long.TYPE);
+        }
+    }
+
+    private void validateOffsetLimit( long offset, long limit ) {
+        if (offset < 0) throw new IllegalArgumentException("Offset must be >= 0");
+        if (limit < 0) throw new IllegalArgumentException("Limit must be >= 0");
+    }
+
+
+    private String formSqlQuery( final String searchQuery, final String sortField, final String sortOrder ) {
+        StringBuilder sqlQuery = new StringBuilder("select * from (select * from phones " +
+                "where id in (select phoneId from stocks where stock > 0)");
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            sqlQuery.append(" and (lower(brand) like lower(:searchQuery) or lower(model) like lower(:searchQuery))");
+        }
+        if (sortField != null && !sortField.isEmpty()) {
+            sqlQuery.append(" order by ")
+                    .append(sortField)
+                    .append(" ")
+                    .append((sortOrder != null && !sortOrder.isEmpty()) ? sortOrder : "asc");
+        }
+        sqlQuery.append(" offset :offset limit :limit) ph left join phone2color on ph.id = phone2color.phoneId left join colors on phone2color.colorId = colors.id");
+        return sqlQuery.toString();
+    }
+
+    private Map<String, Object> fillSqlParameters( final String searchQuery, final String sortField,
+                                                   long offset, long limit ) {
+        Map<String, Object> parameters = new HashMap<>();
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            parameters.put("searchQuery", searchQuery);
+        }
+        parameters.put("sortField", sortField);
+        parameters.put("offset", offset);
+        parameters.put("limit", limit);
+        return parameters;
     }
 }
