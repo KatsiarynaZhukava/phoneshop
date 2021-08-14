@@ -8,6 +8,6 @@ import java.util.Map;
 public interface CartService {
     Cart getCart();
     void addPhone(Long phoneId, Long requestedQuantity) throws OutOfStockException;
-    void update(Map<Long, Long> items);
+    void update(Map<Long, Long> items) throws OutOfStockException;
     void remove(Long phoneId);
 }

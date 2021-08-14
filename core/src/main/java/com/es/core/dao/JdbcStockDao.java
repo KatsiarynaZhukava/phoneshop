@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -25,5 +26,15 @@ public class JdbcStockDao implements StockDao {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<Stock> findAll( final List<Long> phoneIds ) {
+        StringBuilder sqlQuery = new StringBuilder("select * from stocks where phoneId in (");
+        for(int i = 0; i < phoneIds.size(); i++) {
+            sqlQuery.append("?,");
+        }
+        sqlQuery.replace(sqlQuery.length() - 1, sqlQuery.length(), ")");
+        return jdbcTemplate.query(sqlQuery.toString(), phoneIds.toArray(), stockRowMapper);
     }
 }

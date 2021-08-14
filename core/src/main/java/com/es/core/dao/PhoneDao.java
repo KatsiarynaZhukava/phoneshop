@@ -10,6 +10,7 @@ public interface PhoneDao {
     void save(Phone phone);
     List<Phone> findAll(long offset, long limit);
     List<Phone> findAll(String searchQuery, String sortField, String sortOrder, long offset, long limit);
+    List<Phone> findAll(List<Long> phoneIds);
     boolean exists(Long id);
     long getTotalNumber();
     long getTotalNumber(String searchQuery);
