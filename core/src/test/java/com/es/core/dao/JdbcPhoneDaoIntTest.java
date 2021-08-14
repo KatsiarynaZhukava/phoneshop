@@ -11,10 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -201,10 +198,47 @@ public class JdbcPhoneDaoIntTest {
     }
 
     @Test
+    public void testFindAllNonexistentPhones() {
+        List<Long> phoneIds = new ArrayList<>(Arrays.asList(1L, 2L, 3L));
+        List<Phone> phones = phoneDao.findAll(phoneIds);
+        assertEquals(0L, phones.size());
+    }
+
+    @Test
+    public void testFindAllExistingPhones() {
+        List<Long> phoneIds = new ArrayList<>(Arrays.asList(2001L, 2002L, 2003L));
+        List<Phone> phones = phoneDao.findAll(phoneIds);
+        assertEquals(3L, phones.size());
+        assertEquals(2001L, phones.get(0).getId().longValue());
+        assertEquals(2002L, phones.get(1).getId().longValue());
+        assertEquals(2003L, phones.get(2).getId().longValue());
+    }
+
+    @Test
     public void testCheckExistingPhoneExistence() { assertTrue(phoneDao.exists(2000L)); }
 
     @Test
     public void testCheckNonexistentPhoneExistence() { assertFalse(phoneDao.exists(-1L)); }
+
+    @Test
+    public void testGetTotalNumber() {
+        assertEquals(4, phoneDao.getTotalNumber());
+    }
+
+    @Test
+    public void testGetTotalNumberSearchQueryNull() {
+        assertEquals(4, phoneDao.getTotalNumber(null));
+    }
+
+    @Test
+    public void testGetTotalNumberSearchQueryEmpty() {
+        assertEquals(4, phoneDao.getTotalNumber(""));
+    }
+
+    @Test
+    public void testGetTotalNumberWithSearchQuery() {
+        assertEquals(3, phoneDao.getTotalNumber("Alcatel"));
+    }
 
     private void assertPhonesEquality( final Phone expected, final Phone actual ) {
         assertEquals(expected.getId(), actual.getId());

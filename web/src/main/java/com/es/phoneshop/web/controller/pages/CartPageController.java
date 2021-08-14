@@ -1,5 +1,6 @@
 package com.es.phoneshop.web.controller.pages;
 
+import com.es.core.exception.OutOfStockException;
 import com.es.core.service.CartService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,7 @@ public class CartPageController {
     }
 
     @RequestMapping(method = RequestMethod.PUT)
-    public void updateCart() {
+    public void updateCart() throws OutOfStockException {
         cartService.update(null);
     }
 }

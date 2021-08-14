@@ -103,6 +103,16 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
+    public List<Phone> findAll( final List<Long> phoneIds ) {
+        StringBuilder sqlQuery = new StringBuilder(SELECT_PHONES_QUERY + " where phones.id in (");
+        for(int i = 0; i < phoneIds.size(); i++) {
+            sqlQuery.append("?,");
+        }
+        sqlQuery.replace(sqlQuery.length() - 1, sqlQuery.length(), ")");
+        return jdbcTemplate.query(sqlQuery.toString(), phoneIds.toArray(), phoneExtractor);
+    }
+
+    @Override
     public boolean exists( Long id ) {
         return !jdbcTemplate.query(SELECT_PHONE_BY_ID_QUERY, new Object[] { id }, longSingleColumnRowMapper)
                             .isEmpty();
@@ -129,7 +139,6 @@ public class JdbcPhoneDao implements PhoneDao {
         if (offset < 0) throw new IllegalArgumentException("Offset must be >= 0");
         if (limit <= 0) throw new IllegalArgumentException("Limit must be > 0");
     }
-
 
     private String formSqlQuery( final String searchQuery, final String sortField, final String sortOrder ) {
         StringBuilder sqlQuery = new StringBuilder("select * from (select * from phones " + POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART);

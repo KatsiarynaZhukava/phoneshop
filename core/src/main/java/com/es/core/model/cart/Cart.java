@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Cart {
-    private Map<Long, CartItem> items;
+    private Map<Long, Long> items;
     private long totalQuantity;
     private BigDecimal totalCost;
 
@@ -13,13 +13,9 @@ public class Cart {
         this.items = new ConcurrentHashMap<>();
     }
 
-    public synchronized Map<Long, CartItem> getItems() {
-        return items;
-    }
+    public Map<Long, Long> getItems() { return items; }
 
-    public synchronized void setItems(Map<Long, CartItem> items) {
-        this.items = items;
-    }
+    public void setItems(Map<Long, Long> items) { this.items = items; }
 
     public synchronized long getTotalQuantity() {
         return totalQuantity;
