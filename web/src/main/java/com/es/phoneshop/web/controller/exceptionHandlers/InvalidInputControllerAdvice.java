@@ -14,5 +14,4 @@ public class InvalidInputControllerAdvice {
         Error error = new Error(e.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-
 }

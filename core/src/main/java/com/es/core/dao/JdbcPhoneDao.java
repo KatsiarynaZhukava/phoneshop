@@ -45,22 +45,22 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
-    public Optional<Phone> get( final Long key ) {
+    public Optional<Phone> get(final Long key) {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_QUERY + " where phones.id = ?",
-                                                new Object[] { key }, phoneExtractor);
+                new Object[]{key}, phoneExtractor);
         return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
     }
 
     @Override
     @Transactional
-    public void save( final Phone phone ) {
-        Object[] fields = new Object[] { phone.getBrand(), phone.getModel(), phone.getPrice(), phone.getDisplaySizeInches(),
-                                         phone.getWeightGr(), phone.getLengthMm(), phone.getWidthMm(), phone.getHeightMm(),
-                                         phone.getAnnounced(), phone.getDeviceType(), phone.getOs(), phone.getDisplayResolution(),
-                                         phone.getPixelDensity(), phone.getDisplayTechnology(), phone.getBackCameraMegapixels(),
-                                         phone.getFrontCameraMegapixels(), phone.getRamGb(), phone.getInternalStorageGb(),
-                                         phone.getBatteryCapacityMah(), phone.getTalkTimeHours(), phone.getStandByTimeHours(),
-                                         phone.getBluetooth(), phone.getPositioning(), phone.getImageUrl(), phone.getDescription(), phone.getId() };
+    public void save(final Phone phone) {
+        Object[] fields = new Object[]{phone.getBrand(), phone.getModel(), phone.getPrice(), phone.getDisplaySizeInches(),
+                phone.getWeightGr(), phone.getLengthMm(), phone.getWidthMm(), phone.getHeightMm(),
+                phone.getAnnounced(), phone.getDeviceType(), phone.getOs(), phone.getDisplayResolution(),
+                phone.getPixelDensity(), phone.getDisplayTechnology(), phone.getBackCameraMegapixels(),
+                phone.getFrontCameraMegapixels(), phone.getRamGb(), phone.getInternalStorageGb(),
+                phone.getBatteryCapacityMah(), phone.getTalkTimeHours(), phone.getStandByTimeHours(),
+                phone.getBluetooth(), phone.getPositioning(), phone.getImageUrl(), phone.getDescription(), phone.getId()};
         try {
             Long id = phone.getId();
             if (id != null) {
@@ -79,23 +79,23 @@ public class JdbcPhoneDao implements PhoneDao {
         }
 
         List<Object[]> batch = new ArrayList<>();
-        for (Color color: phone.getColors()) {
-            Object[] values = new Object[] { phone.getId(), color.getId() };
+        for (Color color : phone.getColors()) {
+            Object[] values = new Object[]{phone.getId(), color.getId()};
             batch.add(values);
         }
         jdbcTemplate.batchUpdate(INSERT_INTO_PHONE2COLOR_QUERY, batch);
     }
 
     @Override
-    public List<Phone> findAll( long offset, long limit ) {
+    public List<Phone> findAll(long offset, long limit) {
         validateOffsetLimit(offset, limit);
         return jdbcTemplate.query(SELECT_PHONES_COLORS_WITH_OFFSET_LIMIT,
-                                                new Object[] { offset, limit }, phoneExtractor);
+                new Object[]{offset, limit}, phoneExtractor);
     }
 
     @Override
-    public List<Phone> findAll( final String searchQuery, final String sortField,
-                                final String sortOrder, long offset, long limit ) {
+    public List<Phone> findAll(final String searchQuery, final String sortField,
+                               final String sortOrder, long offset, long limit) {
         validateOffsetLimit(offset, limit);
         String sqlQuery = formSqlQuery(searchQuery, sortField, sortOrder);
         Map<String, Object> sqlParameters = fillSqlParameters(searchQuery, sortField, offset, limit);
@@ -103,9 +103,9 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
-    public List<Phone> findAll( final List<Long> phoneIds ) {
+    public List<Phone> findAll(final List<Long> phoneIds) {
         StringBuilder sqlQuery = new StringBuilder(SELECT_PHONES_QUERY + " where phones.id in (");
-        for(int i = 0; i < phoneIds.size(); i++) {
+        for (int i = 0; i < phoneIds.size(); i++) {
             sqlQuery.append("?,");
         }
         sqlQuery.replace(sqlQuery.length() - 1, sqlQuery.length(), ")");
@@ -113,9 +113,9 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
-    public boolean exists( Long id ) {
-        return !jdbcTemplate.query(SELECT_PHONE_BY_ID_QUERY, new Object[] { id }, longSingleColumnRowMapper)
-                            .isEmpty();
+    public boolean exists(Long id) {
+        return !jdbcTemplate.query(SELECT_PHONE_BY_ID_QUERY, new Object[]{id}, longSingleColumnRowMapper)
+                .isEmpty();
     }
 
     @Override
@@ -124,7 +124,7 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
-    public long getTotalNumber( final String searchQuery ) {
+    public long getTotalNumber(final String searchQuery) {
         if (searchQuery == null || searchQuery.isEmpty()) {
             return getTotalNumber();
         } else {
@@ -135,15 +135,20 @@ public class JdbcPhoneDao implements PhoneDao {
         }
     }
 
-    private void validateOffsetLimit( long offset, long limit ) {
+    private void validateOffsetLimit(long offset, long limit) {
         if (offset < 0) throw new IllegalArgumentException("Offset must be >= 0");
         if (limit <= 0) throw new IllegalArgumentException("Limit must be > 0");
     }
 
-    private String formSqlQuery( final String searchQuery, final String sortField, final String sortOrder ) {
+    private String formSqlQuery(final String searchQuery, final String sortField, final String sortOrder) {
         StringBuilder sqlQuery = new StringBuilder("select * from (select * from phones " + POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART);
         if (searchQuery != null && !searchQuery.isEmpty()) {
-            sqlQuery.append(" and (lower(brand) like lower(:searchQuery) or lower(model) like lower(:searchQuery))");
+            sqlQuery.append(" and (");
+            String[] keywords = searchQuery.toLowerCase(Locale.ROOT).trim().split("[ ]+");
+            for (int i = 0; i < keywords.length; i++) {
+                sqlQuery.append("lower(brand) like lower(:keyword").append(i).append(") or lower(model) like lower(:keyword").append(i).append(") or ");
+            }
+            sqlQuery.replace(sqlQuery.length() - 3, sqlQuery.length(), ")");
         }
         if (sortField != null && !sortField.isEmpty()) {
             sqlQuery.append(" order by ")
@@ -155,11 +160,14 @@ public class JdbcPhoneDao implements PhoneDao {
         return sqlQuery.toString();
     }
 
-    private Map<String, Object> fillSqlParameters( final String searchQuery, final String sortField,
-                                                   long offset, long limit ) {
+    private Map<String, Object> fillSqlParameters(final String searchQuery, final String sortField,
+                                                  long offset, long limit) {
         Map<String, Object> parameters = new HashMap<>();
         if (searchQuery != null && !searchQuery.isEmpty()) {
-            parameters.put("searchQuery", searchQuery);
+            String[] keywords = searchQuery.toLowerCase(Locale.ROOT).trim().split("[ ]+");
+            for (int i = 0; i < keywords.length; i++) {
+                parameters.put("keyword" + i, "%" + keywords[i] + "%");
+            }
         }
         parameters.put("sortField", sortField);
         parameters.put("offset", offset);
