@@ -1,6 +1,7 @@
 package com.es.phoneshop.web.controller.pages;
 
 import com.es.core.dao.PhoneDao;
+import com.es.core.exception.NotFoundException;
 import com.es.core.service.CartService;
 import com.es.core.service.PaginationService;
 import org.springframework.stereotype.Controller;
@@ -16,7 +17,7 @@ import java.text.MessageFormat;
 @RequestMapping (value = "/productList")
 public class ProductListPageController {
     private static final int NUMBER_OF_PHONES_PER_PAGE = 10;
-    private static final String PAGE_INDEX_OUT_OF_BOUND = "Page index {0} out of bound";
+    private static final String PAGE_NOT_FOUND_MESSAGE = "Page not found by id {0}";
 
     @Resource
     private PhoneDao phoneDao;
@@ -27,13 +28,13 @@ public class ProductListPageController {
 
     @GetMapping
     public String showProductList( final Model model,
-                                   final @RequestParam(required = false, defaultValue = "1") int page,
-                                   final @RequestParam(required = false) String sortField,
-                                   final @RequestParam(required = false) String sortOrder,
-                                   final @RequestParam(required = false) String searchQuery ) {
+                                         final @RequestParam(required = false, defaultValue = "1") int page,
+                                         final @RequestParam(required = false) String sortField,
+                                         final @RequestParam(required = false) String sortOrder,
+                                         final @RequestParam(required = false) String searchQuery ) throws NotFoundException {
         long totalPagesNumber = paginationService.getTotalPagesNumber(NUMBER_OF_PHONES_PER_PAGE, searchQuery);
         if (page <= 0 || page > totalPagesNumber) {
-            model.addAttribute("errorMessage", MessageFormat.format(PAGE_INDEX_OUT_OF_BOUND, page));
+            model.addAttribute("message", MessageFormat.format(PAGE_NOT_FOUND_MESSAGE, page));
             return "error";
         }
 
@@ -44,7 +45,6 @@ public class ProductListPageController {
         model.addAttribute("sortField", sortField);
         model.addAttribute("sortOrder", sortOrder);
         model.addAttribute("searchQuery", searchQuery);
-        model.addAttribute("totalPagesNumber", totalPagesNumber);
         model.addAttribute("totalPagesNumber", totalPagesNumber);
         model.addAttribute("cart", cartService.getCart());
         return "productList";

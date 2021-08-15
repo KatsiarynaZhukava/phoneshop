@@ -94,7 +94,7 @@
           </td>
           <form>
             <td>
-              <input name="requestedQuantity" class="form-control" style="${phone.price == null ? 'display: none' : ''}">
+              <input id="quantity${phone.id}" name="requestedQuantity" class="form-control" style="${phone.price == null ? 'display: none' : ''}">
               <input id="phoneId" value="${phone.id}" type="hidden">
                 <p id="message${phone.id}" class="message"></p>
             </td>

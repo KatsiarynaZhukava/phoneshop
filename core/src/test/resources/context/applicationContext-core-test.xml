@@ -12,6 +12,5 @@
 
     <jdbc:initialize-database>
         <jdbc:script location="db/schema.sql" />
-        <jdbc:script location="db/demodata-phones.sql"/>
     </jdbc:initialize-database>
 </beans>
