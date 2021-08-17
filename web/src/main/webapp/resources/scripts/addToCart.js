@@ -1,30 +1,40 @@
-var previousPhoneId;
+let previousPhoneId;
+function isInt(value) {
+    return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
+}
 
 function addToCart(form) {
     let requestedQuantity = form.elements["requestedQuantity"].value;
     let phoneId = form.elements["phoneId"].value;
 
-    $.ajax({
-        url: contextPath + "/ajaxCart",
-        type: "POST",
-        data: JSON.stringify({ requestedQuantity,phoneId }),
-        dataType: "json",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        contentType: "application/json",
-        success: function(data) {
-            $("#cartBtn").text("My cart: " + data.totalQuantity + " items $ " + data.totalCost.toFixed(1));
-            $(`#message${phoneId}`).text("");
-            form.elements["requestedQuantity"].value = "";
+    if (previousPhoneId !== undefined && previousPhoneId !== phoneId) {
+        document.getElementById(`message${previousPhoneId}`).innerHTML = "";
+        document.getElementById(`quantity${previousPhoneId}`).value = "";
+    }
 
-            $(`#quantity${previousPhoneId}`).val("");
-            $(`#message${previousPhoneId}`).text("");
-        },
-        error: function(data) {
-            previousPhoneId = phoneId;
-            $(`#message${phoneId}`).text(JSON.parse(data.responseText).message);
-        }
-    });
+    if(isInt(requestedQuantity)) {
+        $.ajax({
+            url: contextPath + "/ajaxCart",
+            type: "POST",
+            data: JSON.stringify({ requestedQuantity,phoneId }),
+            dataType: "json",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            contentType: "application/json",
+            success: function(data) {
+                $("#cartBtn").text("My cart: " + data.totalQuantity + " items $ " + data.totalCost.toFixed(1));
+                $(`#message${phoneId}`).text("");
+                form.elements["requestedQuantity"].value = "";
+            },
+            error: function(data) {
+                previousPhoneId = phoneId;
+                $(`#message${phoneId}`).text(JSON.parse(data.responseText).message);
+            }
+        });
+    } else {
+        previousPhoneId = phoneId;
+        document.getElementById(`message${phoneId}`).innerHTML = "Quantity should be an integer number";
+    }
 }

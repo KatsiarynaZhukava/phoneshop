@@ -1,10 +1,9 @@
 package com.es.phoneshop.web.controller;
 
 import com.es.core.exception.OutOfStockException;
-import com.es.core.model.cart.Cart;
 import com.es.core.service.CartService;
-import com.es.phoneshop.web.controller.dto.input.CartItemInputDto;
-import com.es.phoneshop.web.controller.dto.output.CartOutputDto;
+import com.es.phoneshop.web.dto.input.CartItemInputDto;
+import com.es.phoneshop.web.dto.output.CartOutputDto;
 import com.es.phoneshop.web.exception.InvalidInputException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -35,7 +34,6 @@ public class AjaxCartController {
         } catch (OutOfStockException e) {
             throw new InvalidInputException(e.getMessage());
         }
-        Cart cart = cartService.getCart();
-        return new CartOutputDto(cart.getTotalQuantity(), cart.getTotalCost());
+        return new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost());
     }
 }

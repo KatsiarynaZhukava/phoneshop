@@ -67,9 +67,6 @@ public class ProductListPageControllerTest {
         verify(paginationService, times(1)).getTotalPagesNumber(10, null);
         verifyNoMoreInteractions(paginationService);
 
-        verify(cartService, times(1)).getCart();
-        verifyNoMoreInteractions(cartService);
-
         verify(phoneDao, times(1)).findAll( null, "price", "desc", 0L, 10);
         verifyNoMoreInteractions(phoneDao);
     }

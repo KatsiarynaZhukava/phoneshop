@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Component
 public class JdbcStockDao implements StockDao {
+    private static final String SELECT_STOCK_BY_PHONE_ID_QUERY = "select * from stocks where phoneId = ?";
+    private static final String SELECT_STOCKS_BY_PHONE_IDS_PART = "select * from stocks where phoneId in (";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -20,9 +22,8 @@ public class JdbcStockDao implements StockDao {
 
     @Override
     public Optional<Stock> get( final Long phoneId ) {
-        String sqlQuery = "select * from stocks where phoneId = ?";
         try {
-            return Optional.of(jdbcTemplate.queryForObject(sqlQuery, new Object[]{phoneId}, stockRowMapper));
+            return Optional.of(jdbcTemplate.queryForObject(SELECT_STOCK_BY_PHONE_ID_QUERY, new Object[]{phoneId}, stockRowMapper));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -30,7 +31,7 @@ public class JdbcStockDao implements StockDao {
 
     @Override
     public List<Stock> findAll( final List<Long> phoneIds ) {
-        StringBuilder sqlQuery = new StringBuilder("select * from stocks where phoneId in (");
+        StringBuilder sqlQuery = new StringBuilder(SELECT_STOCKS_BY_PHONE_IDS_PART);
         for(int i = 0; i < phoneIds.size(); i++) {
             sqlQuery.append("?,");
         }

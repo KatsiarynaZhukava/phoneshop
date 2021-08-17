@@ -104,7 +104,7 @@ public class JdbcPhoneDao implements PhoneDao {
 
     @Override
     public List<Phone> findAll(final List<Long> phoneIds) {
-        StringBuilder sqlQuery = new StringBuilder(SELECT_PHONES_QUERY + " where phones.id in (");
+        StringBuilder sqlQuery = new StringBuilder(SELECT_PHONES_QUERY + " where phones.id in ( ");
         for (int i = 0; i < phoneIds.size(); i++) {
             sqlQuery.append("?,");
         }
@@ -144,7 +144,7 @@ public class JdbcPhoneDao implements PhoneDao {
         StringBuilder sqlQuery = new StringBuilder("select * from (select * from phones " + POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART);
         if (searchQuery != null && !searchQuery.isEmpty()) {
             sqlQuery.append(" and (");
-            String[] keywords = searchQuery.toLowerCase(Locale.ROOT).trim().split("[ ]+");
+            String[] keywords = searchQuery.toLowerCase().trim().split("[ ]+");
             for (int i = 0; i < keywords.length; i++) {
                 sqlQuery.append("lower(brand) like lower(:keyword").append(i).append(") or lower(model) like lower(:keyword").append(i).append(") or ");
             }
@@ -164,7 +164,7 @@ public class JdbcPhoneDao implements PhoneDao {
                                                   long offset, long limit) {
         Map<String, Object> parameters = new HashMap<>();
         if (searchQuery != null && !searchQuery.isEmpty()) {
-            String[] keywords = searchQuery.toLowerCase(Locale.ROOT).trim().split("[ ]+");
+            String[] keywords = searchQuery.toLowerCase().trim().split("[ ]+");
             for (int i = 0; i < keywords.length; i++) {
                 parameters.put("keyword" + i, "%" + keywords[i] + "%");
             }

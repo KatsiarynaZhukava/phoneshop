@@ -1,4 +1,4 @@
-package com.es.phoneshop.web.controller.exceptionHandlers;
+package com.es.phoneshop.web.exceptionHandlers;
 
 public class Error {
     private String message;
