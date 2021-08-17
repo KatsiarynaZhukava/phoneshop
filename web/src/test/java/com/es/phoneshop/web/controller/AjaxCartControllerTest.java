@@ -3,8 +3,8 @@ package com.es.phoneshop.web.controller;
 import com.es.core.exception.OutOfStockException;
 import com.es.core.model.cart.Cart;
 import com.es.core.service.CartService;
-import com.es.phoneshop.web.controller.exceptionHandlers.InvalidInputControllerAdvice;
 import com.es.phoneshop.web.exception.InvalidInputException;
+import com.es.phoneshop.web.exceptionHandlers.InvalidInputControllerAdvice;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -43,19 +42,21 @@ public class AjaxCartControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(ajaxCartController)
                                  .setControllerAdvice(new InvalidInputControllerAdvice())
                                  .build();
-        when(cartService.getCart()).thenReturn(cart);
     }
 
 
     @Test
     public void testAddPhone() throws Exception {
         BigDecimal totalCost = new BigDecimal(4200);
+
         doAnswer((Answer<Void>) invocation -> {
                            cart.getItems().put(phoneId, quantity);
-                           cart.setTotalCost(totalCost);
-                           cart.setTotalQuantity(quantity);
                            return null;
         }).when(cartService).addPhone(phoneId, quantity);
+
+        when(cartService.getTotalQuantity()).thenReturn(quantity);
+        when(cartService.getTotalCost()).thenReturn(totalCost);
+
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 
         mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
@@ -68,9 +69,8 @@ public class AjaxCartControllerTest {
 
     @Test
     public void testAddPhoneQuantityExceedsStock() throws Exception {
-        Long availableStock = 10L;
+        long availableStock = 10L;
         doThrow(new OutOfStockException(quantity, availableStock)).when(cartService).addPhone(phoneId, quantity);
-        cart.setItems(new HashMap<>());
 
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 

@@ -13,4 +13,5 @@
         <property name="prefix" value="/WEB-INF/pages/" />
         <property name="suffix" value=".jsp" />
     </bean>
+    <bean class="org.springframework.validation.beanvalidation.MethodValidationPostProcessor"/>
 </beans>
