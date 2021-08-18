@@ -12,6 +12,7 @@ import org.springframework.web.context.annotation.SessionScope;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -99,11 +100,12 @@ public class HttpSessionCartService implements CartService {
 
     @Override
     public BigDecimal getTotalCost() {
-        Map<Long, BigDecimal> phonePrices = phoneDao.findAll(new ArrayList<>(cart.getItems().keySet()))
+        Map<Long, Long> copyCartItems = new HashMap<>(cart.getItems());
+        Map<Long, BigDecimal> phonePrices = phoneDao.findAll(new ArrayList<>(copyCartItems.keySet()))
                                                     .stream()
                                                     .collect(Collectors.toMap( Phone::getId, Phone::getPrice ));
-        return cart.getItems().entrySet().stream()
-                                         .map(entry -> new BigDecimal(entry.getValue()).multiply(phonePrices.get(entry.getKey())))
-                                         .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return copyCartItems.entrySet().stream()
+                                       .map(entry -> new BigDecimal(entry.getValue()).multiply(phonePrices.get(entry.getKey())))
+                                       .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
