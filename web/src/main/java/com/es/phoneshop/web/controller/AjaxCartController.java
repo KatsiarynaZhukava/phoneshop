@@ -35,11 +35,7 @@ public class AjaxCartController {
 
     @DeleteMapping
     @ResponseBody
-    public CartOutputDto deletePhone( final @RequestBody @Valid CartItemInputDto cartItemInputDto,
-                                      final BindingResult bindingResult ) {
-        if (bindingResult.hasErrors()) {
-            throw new InvalidInputException(bindingResult.getAllErrors().get(0).getDefaultMessage());
-        }
+    public CartOutputDto deletePhone( final @RequestBody CartItemInputDto cartItemInputDto ) {
         cartService.remove(cartItemInputDto.getPhoneId());
         return new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost());
     }
