@@ -12,8 +12,8 @@ public class ValueOfEnumValidator implements ConstraintValidator<ValueOfEnum, Ch
     @Override
     public void initialize( final ValueOfEnum annotation ) {
         acceptedValues = Stream.of(annotation.enumClass().getEnumConstants())
-                               .map(Enum::toString)
-                               .collect(Collectors.toList());
+                                                         .map(Enum::toString)
+                                                         .collect(Collectors.toList());
     }
 
     @Override
