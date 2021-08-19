@@ -47,7 +47,7 @@ public class JdbcPhoneDao implements PhoneDao {
     @Override
     public Optional<Phone> get(final Long key) {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_QUERY + " where phones.id = ?",
-                new Object[]{key}, phoneExtractor);
+                                                new Object[]{key}, phoneExtractor);
         return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
     }
 
