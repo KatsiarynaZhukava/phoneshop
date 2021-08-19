@@ -5,13 +5,9 @@ import com.es.core.service.CartService;
 import com.es.phoneshop.web.dto.input.CartItemInputDto;
 import com.es.phoneshop.web.dto.output.CartOutputDto;
 import com.es.phoneshop.web.exception.InvalidInputException;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -22,7 +18,7 @@ public class AjaxCartController {
     @Resource
     private CartService cartService;
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping
     @ResponseBody
     public CartOutputDto addPhone( final @RequestBody @Valid CartItemInputDto cartItemInputDto,
                                    final BindingResult bindingResult ) {
@@ -34,6 +30,17 @@ public class AjaxCartController {
         } catch (OutOfStockException e) {
             throw new InvalidInputException(e.getMessage());
         }
+        return new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost());
+    }
+
+    @DeleteMapping
+    @ResponseBody
+    public CartOutputDto deletePhone( final @RequestBody @Valid CartItemInputDto cartItemInputDto,
+                                      final BindingResult bindingResult ) {
+        if (bindingResult.hasErrors()) {
+            throw new InvalidInputException(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+        cartService.remove(cartItemInputDto.getPhoneId());
         return new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost());
     }
 }

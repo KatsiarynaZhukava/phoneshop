@@ -12,10 +12,7 @@ import org.springframework.web.context.annotation.SessionScope;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-<<<<<<< HEAD
-=======
 import java.util.HashMap;
->>>>>>> master
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @SessionScope
 public class HttpSessionCartService implements CartService {
+
     @Resource
     private PhoneDao phoneDao;
     @Resource
