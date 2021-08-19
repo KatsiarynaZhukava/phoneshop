@@ -1,0 +1,18 @@
+.message {
+    color: #af3936;
+    margin-top: 10px;
+}
+.header-container {
+    width: 100%;
+    padding: 20px;
+    margin: 0;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+}
+.no-items-message {
+    text-align: center;
+}
