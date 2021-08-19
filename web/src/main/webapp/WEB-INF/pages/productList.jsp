@@ -2,15 +2,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
-<head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<tags:master pageTitle="Products">
   <link rel="stylesheet" href="<c:url value="/resources/styles/productList.css"/>">
-  <link rel="stylesheet" href="<c:url value="/resources/styles/common.css"/>">
-  <script>let contextPath = "${pageContext.request.contextPath}"</script>
-  <script src="<c:url value="/resources/scripts/addToCart.js"/>"></script>
-</head>
-<body>
   <div class="header-container">
     <div class="float-left">
       <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
@@ -90,7 +83,7 @@
                 <p id="message${phone.id}" class="message"></p>
             </td>
             <td>
-              <input value="Add to cart" onclick="addToCart(this.form)" type="button" class="btn btn-primary">
+              <input value="Add to cart" onclick="cartOperations(this.form)" type="button" class="btn btn-primary">
             </td>
           </form>
         </tr>
@@ -133,4 +126,4 @@
       </div>
     </c:otherwise>
   </c:choose>
-</body>
+</tags:master>
