@@ -33,4 +33,32 @@ public class CartItemInputDto {
     public void setRequestedQuantity(Long requestedQuantity) {
         this.requestedQuantity = requestedQuantity;
     }
+
+    @Override
+    public int hashCode() {
+        int result = 42;
+        if (phoneId != null) {
+            result = 31 * result + phoneId.hashCode();
+        }
+        if (requestedQuantity != null) {
+            result = 31 * result + requestedQuantity.hashCode();
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof CartItemInputDto))
+            return false;
+        final CartItemInputDto other = (CartItemInputDto) obj;
+        boolean phoneIdEquals = (this.phoneId == null && other.phoneId == null)
+                || (this.phoneId != null && this.phoneId.equals(other.phoneId));
+        boolean requestedQuantityEquals = (this.requestedQuantity == null && other.requestedQuantity == null)
+                || (this.requestedQuantity != null && this.requestedQuantity.equals(other.requestedQuantity));
+        return phoneIdEquals && requestedQuantityEquals;
+    }
 }

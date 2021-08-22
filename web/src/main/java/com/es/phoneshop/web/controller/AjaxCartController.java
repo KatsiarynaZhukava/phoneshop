@@ -32,11 +32,4 @@ public class AjaxCartController {
         }
         return new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost());
     }
-
-    @DeleteMapping
-    @ResponseBody
-    public CartOutputDto deletePhone( final @RequestBody CartItemInputDto cartItemInputDto ) {
-        cartService.remove(cartItemInputDto.getPhoneId());
-        return new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost());
-    }
 }

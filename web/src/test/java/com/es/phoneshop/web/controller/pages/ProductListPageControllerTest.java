@@ -33,11 +33,11 @@ public class ProductListPageControllerTest {
     private final String URL = "/productList";
 
     @InjectMocks
-    private ProductListPageController plpController;
+    private ProductListPageController controller;
 
     @Before
     public void init() {
-        mockMvc = MockMvcBuilders.standaloneSetup(plpController)
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
                                  .setSingleView(new InternalResourceView("/WEB-INF/pages/productList.jsp"))
                                  .build();
         when(paginationService.getOffset(10, 1)).thenReturn(0L);
