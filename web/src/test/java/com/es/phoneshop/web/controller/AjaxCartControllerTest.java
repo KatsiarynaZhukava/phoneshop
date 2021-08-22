@@ -40,8 +40,8 @@ public class AjaxCartControllerTest {
     @Before
     public void init() {
         mockMvc = MockMvcBuilders.standaloneSetup(ajaxCartController)
-                                 .setControllerAdvice(new InvalidInputControllerAdvice())
-                                 .build();
+                .setControllerAdvice(new InvalidInputControllerAdvice())
+                .build();
     }
 
 
@@ -50,8 +50,8 @@ public class AjaxCartControllerTest {
         BigDecimal totalCost = new BigDecimal(4200);
 
         doAnswer((Answer<Void>) invocation -> {
-                           cart.getItems().put(phoneId, quantity);
-                           return null;
+            cart.getItems().put(phoneId, quantity);
+            return null;
         }).when(cartService).addPhone(phoneId, quantity);
 
         when(cartService.getTotalQuantity()).thenReturn(quantity);
@@ -60,26 +60,26 @@ public class AjaxCartControllerTest {
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 
         mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
-                                 .content(jsonBody))
-                                 .andExpect(status().isOk())
-                                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                                 .andExpect(jsonPath("$.totalQuantity").value(quantity))
-                                 .andExpect(jsonPath("$.totalCost").value(totalCost));
+                        .content(jsonBody))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.totalQuantity").value(quantity))
+                .andExpect(jsonPath("$.totalCost").value(totalCost));
     }
 
     @Test
     public void testAddPhoneQuantityExceedsStock() throws Exception {
         long availableStock = 10L;
-        doThrow(new OutOfStockException(quantity, availableStock)).when(cartService).addPhone(phoneId, quantity);
+        doThrow(new OutOfStockException(phoneId, quantity, availableStock)).when(cartService).addPhone(phoneId, quantity);
 
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 
         mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)
-                                 .content(jsonBody))
-                                 .andExpect(status().isBadRequest())
-                                 .andExpect(result -> assertEquals( result.getResolvedException().getClass(),
-                                                                    InvalidInputException.class) )
-                                 .andExpect(content().string("{\"message\":\"The overall requested stock " + quantity +
-                                         " exceeds the available " + availableStock +"\"}"));
+                        .content(jsonBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertEquals( result.getResolvedException().getClass(),
+                        InvalidInputException.class) )
+                .andExpect(content().string("{\"message\":\"The overall requested stock " + quantity +
+                        " exceeds the available " + availableStock +"\"}"));
     }
 }

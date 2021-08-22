@@ -35,7 +35,7 @@
             <input id="phoneId" value="${phone.id}" type="hidden">
           </div>
           <div>
-            <input value="Add to cart" onclick="cartOperations(this.form)" type="button" class="btn btn-primary">
+            <input value="Add to cart" onclick="addPhone(this.form)" type="button" class="btn btn-primary">
           </div>
         </div>
         <p id="message${phone.id}" class="message"></p>

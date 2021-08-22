@@ -9,6 +9,9 @@
     <div class="float-left">
       <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
     </div>
+    <div>
+      <h4 id="updateMessage" class="message">${updateMessage}</h4>
+    </div>
     <div class="float-right">
       <a href="<c:url value="/productList"/>">
         <button class="btn btn-outline-primary">Back to product list</button>
@@ -48,23 +51,25 @@
                 <td>${item.key.displaySizeInches} ″</td>
                 <td>$ ${item.key.price}</td>
                 <td>
-                  <form:input path="items[${i.index}].requestedQuantity" id="quantity${item.key.id}" name="requestedQuantity" class="form-control"/>
-                  <form:hidden path="items[${i.index}].phoneId" id="phoneId" name="phoneId" value="${item.key.id}"/>
-                  <form:errors path="items[${i.index}].requestedQuantity"/>
-                  <input type="hidden" name="_method" value="PUT"/>
+                  <form:input path="items[${i.index}].requestedQuantity" class="form-control"/>
+                  <form:hidden path="items[${i.index}].phoneId"/>
+                  <form:errors class="message" path="items[${i.index}].requestedQuantity"/>
+                  <p class="message" id="errorMessage${i.index}"></p>
                 </td>
                 <td>
-                  <input value="Delete" onclick="removeCartItem(${item.key.id})" type="button" class="btn btn-primary">
+                  <button form="deleteCartItemForm" formaction="${pageContext.request.contextPath}/cart/${item.key.id}" type="submit" class="btn btn-primary">
+                    Delete
+                  </button>
                 </td>
               </tr>
-
               </c:forEach>
             </form:form>
           </tbody>
         </table>
-        <div id="cartButtonsContainer" class="float-right action-buttons-container">
+      <form id="deleteCartItemForm" method="post"/>
+      <div id="cartButtonsContainer" class="float-right action-buttons-container">
           <div>
-            <button form="updateCartForm" type="submit" class="btn btn-primary">Update</button>
+            <button form="updateCartForm" onclick="update()" type="submit" class="btn btn-primary">Update</button>
           </div>
           <div>
             <button class="btn btn-primary">Order</button>
