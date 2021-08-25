@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -71,10 +70,7 @@ public class AjaxCartControllerTest {
     @Test
     public void testAddPhoneQuantityExceedsStock() throws Exception {
         long availableStock = 10L;
-        doThrow( new OutOfStockException( Collections.singletonList (
-                 new OutOfStockException.OutOfStockItem(phoneId, quantity, availableStock))))
-                .when(cartService).addPhone(phoneId, quantity);
-
+        doThrow( new OutOfStockException(phoneId, quantity, availableStock)).when(cartService).addPhone(phoneId, quantity);
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 
         mockMvc.perform(post(URL).contentType(MediaType.APPLICATION_JSON)

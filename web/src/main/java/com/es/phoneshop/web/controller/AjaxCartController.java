@@ -1,17 +1,19 @@
 package com.es.phoneshop.web.controller;
 
-import com.es.core.exception.OutOfStockException;
-import com.es.core.service.CartService;
 import com.es.core.dto.input.CartItemInputDto;
 import com.es.core.dto.output.CartTotalsOutputDto;
+import com.es.core.exception.OutOfStockException;
+import com.es.core.service.CartService;
 import com.es.phoneshop.web.exception.InvalidInputException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.text.MessageFormat;
 
 @Controller
 @RequestMapping(value = "/ajaxCart")
@@ -29,8 +31,7 @@ public class AjaxCartController {
         try {
             cartService.addPhone(cartItemInputDto.getPhoneId(), cartItemInputDto.getRequestedQuantity());
         } catch (OutOfStockException e) {
-            throw new InvalidInputException( MessageFormat.format( OutOfStockException.DEFAULT_TEMPLATE_MESSAGE,
-                                                                   e.getItems().get(0).getStockRequested(), e.getItems().get(0).getStockAvailable()));
+            throw new InvalidInputException(e.getMessage());
         }
         return cartService.getCartTotalsOutputDto();
     }
