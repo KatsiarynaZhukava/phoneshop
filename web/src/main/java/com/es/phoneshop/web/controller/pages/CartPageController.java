@@ -84,7 +84,7 @@ public class CartPageController {
                 for ( OutOfStockException.OutOfStockItem item: e.getItems() ) {
                     int index = cartInputDto.getItems().indexOf(new CartItemInputDto(item.getPhoneId(), item.getStockRequested()));
                     bindingResult.rejectValue("items[" + index + "].requestedQuantity", "Stock exceeded",
-                                              MessageFormat.format( OutOfStockException.DEFAULT_TEMPLATE_MESSAGE,
+                                              MessageFormat.format( "The overall requested stock {0} exceeds the available {1}",
                                                                     item.getStockRequested(), item.getStockAvailable() ));
                 }
             }

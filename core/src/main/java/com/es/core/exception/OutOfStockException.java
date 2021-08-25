@@ -1,14 +1,22 @@
 package com.es.core.exception;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OutOfStockException extends Exception {
-    public static final String DEFAULT_TEMPLATE_MESSAGE = "The overall requested stock {0} exceeds the available {1}";
-
     private final List<OutOfStockItem> items;
 
     public OutOfStockException( final List<OutOfStockItem> items ) {
+        super("The overall requested stock exceeds the available one");
         this.items = items;
+    }
+
+    public OutOfStockException( final Long phoneId, final Long stockRequested, final Long stockAvailable ) {
+        super( MessageFormat.format("The overall requested stock {0} exceeds the available {1}",
+                                    stockRequested, stockAvailable ));
+        items = new ArrayList<>();
+        items.add(new OutOfStockItem(phoneId, stockRequested, stockAvailable));
     }
 
     public List<OutOfStockItem> getItems() { return items; }

@@ -45,7 +45,7 @@ public class HttpSessionCartService implements CartService {
             Map<Long, Long> cartItems = cart.getItems();
             long quantityOfItemsInCart = cartItems.getOrDefault(phoneId, 0L);
             if (stock < (quantityOfItemsInCart + requestedQuantity)) {
-                throw new OutOfStockException(Collections.singletonList(new OutOfStockException.OutOfStockItem(phoneId, quantityOfItemsInCart + requestedQuantity, stock)));
+                throw new OutOfStockException(phoneId, quantityOfItemsInCart + requestedQuantity, stock);
             }
             cartItems.put(phoneId, requestedQuantity + quantityOfItemsInCart);
         } finally {
