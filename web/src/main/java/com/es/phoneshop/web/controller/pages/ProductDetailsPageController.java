@@ -2,7 +2,6 @@ package com.es.phoneshop.web.controller.pages;
 
 import com.es.core.dao.PhoneDao;
 import com.es.core.service.CartService;
-import com.es.phoneshop.web.dto.output.CartOutputDto;
 import com.es.phoneshop.web.exception.NotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +26,7 @@ public class ProductDetailsPageController {
                                final @PathVariable Long phoneId ) {
         model.addAttribute("phone", phoneDao.get(phoneId)
                                                         .orElseThrow(NotFoundException.supplier(PHONE_NOT_FOUND_BY_ID, phoneId)));
-        model.addAttribute("cart", new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost()));
+        model.addAttribute("cart", cartService.getCartTotalsOutputDto());
         return "productDetails";
     }
 }

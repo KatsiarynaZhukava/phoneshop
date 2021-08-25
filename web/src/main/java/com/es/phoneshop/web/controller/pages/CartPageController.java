@@ -1,26 +1,26 @@
 package com.es.phoneshop.web.controller.pages;
 
 import com.es.core.dao.PhoneDao;
+import com.es.core.dto.input.CartInputDto;
+import com.es.core.dto.input.CartItemInputDto;
+import com.es.core.dto.output.DetailedCartOutputDto;
 import com.es.core.exception.OutOfStockException;
-import com.es.core.model.cart.Cart;
 import com.es.core.model.phone.Phone;
 import com.es.core.service.CartService;
-import com.es.phoneshop.web.dto.input.CartInputDto;
-import com.es.phoneshop.web.dto.input.CartItemInputDto;
-import com.es.phoneshop.web.dto.output.CartOutputDto;
-import com.es.phoneshop.web.dto.output.DetailedCartOutputDto;
 import com.es.phoneshop.web.validation.QuantityValidator;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -42,61 +42,59 @@ public class CartPageController {
     }
 
     @GetMapping
-    public String getCart( final Model model, final HttpServletResponse response ) {
+    public String getCart( final Model model,
+                           final HttpServletResponse response ) {
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        Cart cart = cartService.getCart();
-        model.addAttribute("cart", new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost()));
 
-        List<Phone> phones = phoneDao.findAll(new ArrayList<>(cart.getItems().keySet()));
+        Map<Long, Long> copyCartItems = new HashMap<>(cartService.getCart().getItems());
+        model.addAttribute("cart", cartService.getCartTotalsOutputDto());
+
+        List<Phone> phones = phoneDao.findAll(new ArrayList<>(copyCartItems.keySet()));
         DetailedCartOutputDto detailedCartOutputDto =
                 new DetailedCartOutputDto(phones.stream()
                                                 .collect( Collectors.toMap( Function.identity(),
-                                                                            phone -> cart.getItems().get(phone.getId()))));
+                                                                            phone -> copyCartItems.get(phone.getId()))));
         model.addAttribute("detailedCart", detailedCartOutputDto);
 
-        List<CartItemInputDto> items = new ArrayList<>();
-        for (Map.Entry<Phone, Long> entry : detailedCartOutputDto.getItems().entrySet()) {
-            items.add(new CartItemInputDto(entry.getKey().getId(), entry.getValue()));
+        if (!model.containsAttribute("cartInputDto")) {
+            List<CartItemInputDto> items = new ArrayList<>();
+            for (Map.Entry<Phone, Long> entry : detailedCartOutputDto.getItems().entrySet()) {
+                items.add(new CartItemInputDto(entry.getKey().getId(), entry.getValue()));
+            }
+            model.addAttribute("cartInputDto", new CartInputDto(items));
         }
-        model.addAttribute("cartInputDto", new CartInputDto(items));
         return "cart";
     }
 
     @PutMapping
     public String updateCart( final @ModelAttribute("cartInputDto") @Valid CartInputDto cartInputDto,
                               final BindingResult bindingResult,
-                              final Model model ) {
-        Map<Long, Long> itemQuantities = cartInputDto.getItems()
-                                                     .stream()
-                                                     .collect( Collectors.toMap( CartItemInputDto::getPhoneId,
-                                                               CartItemInputDto::getRequestedQuantity));
+                              final RedirectAttributes redirectAttributes ) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("updateMessage", "Error updating the cart");
+            redirectAttributes.addFlashAttribute("updateMessage", "Error updating the cart");
         } else {
+            Map<Long, Long> itemQuantities = cartInputDto.getItems()
+                                                         .stream()
+                                                         .collect( Collectors.toMap( CartItemInputDto::getPhoneId,
+                                                                                     CartItemInputDto::getRequestedQuantity));
             try {
                 cartService.update(itemQuantities);
             } catch (OutOfStockException e) {
-                model.addAttribute("updateMessage", "Error updating the cart");
-                int index = cartInputDto.getItems().indexOf(new CartItemInputDto(e.getPhoneId(), e.getStockRequested()));
-                bindingResult.rejectValue("items[" + index + "].requestedQuantity", "Stock exceeded",
-                                            MessageFormat.format("The overall requested stock {0} exceeds the available {1}",
-                                                                 e.getStockRequested(), e.getStockAvailable() ));
+                redirectAttributes.addFlashAttribute("updateMessage", "Error updating the cart");
+                for ( OutOfStockException.OutOfStockItem item: e.getItems() ) {
+                    int index = cartInputDto.getItems().indexOf(new CartItemInputDto(item.getPhoneId(), item.getStockRequested()));
+                    bindingResult.rejectValue("items[" + index + "].requestedQuantity", "Stock exceeded",
+                                              MessageFormat.format( OutOfStockException.DEFAULT_TEMPLATE_MESSAGE,
+                                                                    item.getStockRequested(), item.getStockAvailable() ));
+                }
             }
         }
-        Cart cart = cartService.getCart();
-        model.addAttribute("cart", new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost()));
-
-        List<Phone> phones = phoneDao.findAll(new ArrayList<>(cart.getItems().keySet()));
-        DetailedCartOutputDto detailedCartOutputDto =
-                new DetailedCartOutputDto( phones.stream()
-                                                 .collect( Collectors.toMap( Function.identity(),
-                                                                             phone -> itemQuantities.get(phone.getId()))));
-        model.addAttribute("detailedCart", detailedCartOutputDto);
-        model.addAttribute("cartInputDto", cartInputDto);
-        return "cart";
+        redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.cartInputDto", bindingResult);
+        redirectAttributes.addFlashAttribute("cartInputDto", cartInputDto);
+        return "redirect:/cart";
     }
 
-    @PostMapping(value = "/{phoneId}")
+    @DeleteMapping(value = "/{phoneId}")
     public String deletePhone( final @PathVariable Long phoneId ) {
         cartService.remove(phoneId);
         return "redirect:/cart";

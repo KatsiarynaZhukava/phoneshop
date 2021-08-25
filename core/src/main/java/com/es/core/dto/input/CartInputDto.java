@@ -1,4 +1,5 @@
-package com.es.phoneshop.web.dto.input;
+package com.es.core.dto.input;
+
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

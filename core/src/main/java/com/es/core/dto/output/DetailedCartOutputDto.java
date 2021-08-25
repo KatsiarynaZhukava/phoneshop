@@ -1,4 +1,4 @@
-package com.es.phoneshop.web.dto.output;
+package com.es.core.dto.output;
 
 import com.es.core.model.phone.Phone;
 

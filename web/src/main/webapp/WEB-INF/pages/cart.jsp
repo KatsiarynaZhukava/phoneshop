@@ -51,10 +51,9 @@
                 <td>${item.key.displaySizeInches} ″</td>
                 <td>$ ${item.key.price}</td>
                 <td>
-                  <form:input path="items[${i.index}].requestedQuantity" class="form-control"/>
+                  <form:input path="items[${i.index}].requestedQuantity" autocomplete="off" class="form-control"/>
                   <form:hidden path="items[${i.index}].phoneId"/>
                   <form:errors class="message" path="items[${i.index}].requestedQuantity"/>
-                  <p class="message" id="errorMessage${i.index}"></p>
                 </td>
                 <td>
                   <button form="deleteCartItemForm" formaction="${pageContext.request.contextPath}/cart/${item.key.id}" type="submit" class="btn btn-primary">
@@ -66,10 +65,12 @@
             </form:form>
           </tbody>
         </table>
-      <form id="deleteCartItemForm" method="post"/>
+      <form id="deleteCartItemForm" method="post">
+        <input type="hidden" name="_method" value="delete">
+      </form>
       <div id="cartButtonsContainer" class="float-right action-buttons-container">
           <div>
-            <button form="updateCartForm" onclick="update()" type="submit" class="btn btn-primary">Update</button>
+            <button form="updateCartForm" type="submit" class="btn btn-primary">Update</button>
           </div>
           <div>
             <button class="btn btn-primary">Order</button>

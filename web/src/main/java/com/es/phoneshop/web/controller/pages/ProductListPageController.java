@@ -3,7 +3,6 @@ package com.es.phoneshop.web.controller.pages;
 import com.es.core.dao.PhoneDao;
 import com.es.core.service.CartService;
 import com.es.core.service.PaginationService;
-import com.es.phoneshop.web.dto.output.CartOutputDto;
 import com.es.phoneshop.web.enums.SortField;
 import com.es.phoneshop.web.enums.SortOrder;
 import com.es.phoneshop.web.validation.ValueOfEnum;
@@ -53,7 +52,7 @@ public class ProductListPageController {
             model.addAttribute("sortOrder", sortOrder);
             model.addAttribute("searchQuery", searchQuery);
             model.addAttribute("totalPagesNumber", totalPagesNumber);
-            model.addAttribute("cart", new CartOutputDto(cartService.getTotalQuantity(), cartService.getTotalCost()));
+            model.addAttribute("cart", cartService.getCartTotalsOutputDto());
         }
         return new ModelAndView("productList", model.asMap(), HttpStatus.OK);
     }

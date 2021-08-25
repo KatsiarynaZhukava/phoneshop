@@ -2,6 +2,7 @@ package com.es.core.service;
 
 import com.es.core.dao.PhoneDao;
 import com.es.core.dao.StockDao;
+import com.es.core.dto.output.CartTotalsOutputDto;
 import com.es.core.exception.OutOfStockException;
 import com.es.core.model.cart.Cart;
 import com.es.core.model.phone.Phone;
@@ -11,9 +12,7 @@ import org.springframework.web.context.annotation.SessionScope;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -46,7 +45,7 @@ public class HttpSessionCartService implements CartService {
             Map<Long, Long> cartItems = cart.getItems();
             long quantityOfItemsInCart = cartItems.getOrDefault(phoneId, 0L);
             if (stock < (quantityOfItemsInCart + requestedQuantity)) {
-                throw new OutOfStockException(phoneId, quantityOfItemsInCart + requestedQuantity, stock);
+                throw new OutOfStockException(Collections.singletonList(new OutOfStockException.OutOfStockItem(phoneId, quantityOfItemsInCart + requestedQuantity, stock)));
             }
             cartItems.put(phoneId, requestedQuantity + quantityOfItemsInCart);
         } finally {
@@ -62,20 +61,24 @@ public class HttpSessionCartService implements CartService {
                                                                       Function.identity()) );
         lock.lock();
         try {
+            List<OutOfStockException.OutOfStockItem> outOfStockItems = new ArrayList<>();
             for(Map.Entry<Long, Long> item : items.entrySet()) {
                 Long itemKey = item.getKey();
-                Long requestedStock = item.getValue();
+                Long stockRequested = item.getValue();
 
                 if (stocks.containsKey(itemKey)) {
-                    Long availableStock = stocks.get(itemKey).getStock();
-                    if (availableStock < requestedStock) {
-                        throw new OutOfStockException(itemKey, requestedStock, availableStock);
-                    } else {
-                        cart.getItems().put(itemKey, requestedStock);
+                    Long stockAvailable = stocks.get(itemKey).getStock();
+                    if (stockAvailable < stockRequested) {
+                        outOfStockItems.add(new OutOfStockException.OutOfStockItem(itemKey, stockRequested, stockAvailable));
                     }
                 } else {
-                    throw new OutOfStockException(itemKey, requestedStock, 0);
+                    outOfStockItems.add(new OutOfStockException.OutOfStockItem(itemKey, stockRequested, 0L));
                 }
+            }
+            if (outOfStockItems.isEmpty()) {
+                cart.getItems().putAll(items);
+            } else {
+                throw new OutOfStockException(outOfStockItems);
             }
         } finally {
             lock.unlock();
@@ -93,20 +96,22 @@ public class HttpSessionCartService implements CartService {
     }
 
     @Override
-    public Long getTotalQuantity() {
-        return cart.getItems().values().stream()
-                                       .reduce(Long::sum)
-                                       .orElse(0L);
+    public CartTotalsOutputDto getCartTotalsOutputDto() {
+        Map<Long, Long> copyCartItems = new HashMap<>(cart.getItems());
+        return getCartTotalsOutputDto(copyCartItems);
     }
 
     @Override
-    public BigDecimal getTotalCost() {
-        Map<Long, Long> copyCartItems = new HashMap<>(cart.getItems());
-        Map<Long, BigDecimal> phonePrices = phoneDao.findAll(new ArrayList<>(copyCartItems.keySet()))
+    public CartTotalsOutputDto getCartTotalsOutputDto( final Map<Long, Long> cartItems ) {
+        Long totalQuantity = cartItems.values().stream()
+                                               .reduce(Long::sum)
+                                               .orElse(0L);
+        Map<Long, BigDecimal> phonePrices = phoneDao.findAll(new ArrayList<>(cartItems.keySet()))
                                                     .stream()
                                                     .collect(Collectors.toMap( Phone::getId, Phone::getPrice ));
-        return copyCartItems.entrySet().stream()
-                                       .map(entry -> new BigDecimal(entry.getValue()).multiply(phonePrices.get(entry.getKey())))
-                                       .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalCost = cartItems.entrySet().stream()
+                                                   .map(entry -> new BigDecimal(entry.getValue()).multiply(phonePrices.get(entry.getKey())))
+                                                   .reduce( BigDecimal.ZERO, BigDecimal::add );
+        return new CartTotalsOutputDto(totalQuantity, totalCost);
     }
 }

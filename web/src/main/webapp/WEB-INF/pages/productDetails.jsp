@@ -31,7 +31,7 @@
         <h2 class="bold">Price: </h2><h2>${phone.price} $</h2>
         <div class="form-flex-container">
           <div>
-            <input id="quantity${phone.id}" name="requestedQuantity" class="form-control">
+            <input id="quantity${phone.id}" name="requestedQuantity" autocomplete="off" class="form-control">
             <input id="phoneId" value="${phone.id}" type="hidden">
           </div>
           <div>

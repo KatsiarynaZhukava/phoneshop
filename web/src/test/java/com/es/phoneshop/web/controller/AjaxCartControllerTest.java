@@ -1,5 +1,6 @@
 package com.es.phoneshop.web.controller;
 
+import com.es.core.dto.output.CartTotalsOutputDto;
 import com.es.core.exception.OutOfStockException;
 import com.es.core.model.cart.Cart;
 import com.es.core.service.CartService;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -54,8 +56,7 @@ public class AjaxCartControllerTest {
             return null;
         }).when(cartService).addPhone(phoneId, quantity);
 
-        when(cartService.getTotalQuantity()).thenReturn(quantity);
-        when(cartService.getTotalCost()).thenReturn(totalCost);
+        when(cartService.getCartTotalsOutputDto()).thenReturn(new CartTotalsOutputDto(quantity, totalCost));
 
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 
@@ -70,7 +71,9 @@ public class AjaxCartControllerTest {
     @Test
     public void testAddPhoneQuantityExceedsStock() throws Exception {
         long availableStock = 10L;
-        doThrow(new OutOfStockException(phoneId, quantity, availableStock)).when(cartService).addPhone(phoneId, quantity);
+        doThrow( new OutOfStockException( Collections.singletonList (
+                 new OutOfStockException.OutOfStockItem(phoneId, quantity, availableStock))))
+                .when(cartService).addPhone(phoneId, quantity);
 
         String jsonBody = "{\"phoneId\": \"" + phoneId + "\", \"requestedQuantity\": \"" + quantity + "\"}";
 
