@@ -2,6 +2,7 @@ package com.es.core.service;
 
 import com.es.core.dao.PhoneDao;
 import com.es.core.dao.StockDao;
+import com.es.core.dto.output.CartTotalsOutputDto;
 import com.es.core.exception.OutOfStockException;
 import com.es.core.model.cart.Cart;
 import com.es.core.model.phone.Phone;
@@ -32,6 +33,7 @@ public class HttpSessionCartServiceTest {
     private final Long phoneId1 = 2000L, phoneId2 = 2001L;
     private final Long stock1 = 10L, stock2 = 1L;
     private final Long price1 = 300L, price2 = 500L;
+    private final Long quantity1 = 2L, quantity2 = 1L;
     private Phone phone, anotherPhone;
     private Cart cart;
 
@@ -40,8 +42,8 @@ public class HttpSessionCartServiceTest {
         Cart cart = cartService.getCart();
         assertNotNull(cart);
         assertNotNull(cart.getItems());
-        assertEquals(BigDecimal.ZERO, cartService.getTotalCost());
-        assertEquals(0L, cartService.getTotalQuantity().longValue());
+        assertEquals(BigDecimal.ZERO, cartService.getCartTotalsOutputDto().getTotalCost());
+        assertEquals(0L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
     }
 
     @Test(expected = OutOfStockException.class)
@@ -55,16 +57,16 @@ public class HttpSessionCartServiceTest {
         Cart cart = cartService.getCart();
         cartService.addPhone(phoneId1, 2L);
         assertEquals(1L, cart.getItems().size());
-        assertEquals(2L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(price1 * 2), cartService.getTotalCost());
+        assertEquals(2L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price1 * 2), cartService.getCartTotalsOutputDto().getTotalCost());
         cartService.addPhone(phoneId1, 1L);
         assertEquals(1L, cart.getItems().size());
-        assertEquals(3L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(price1 * 3), cartService.getTotalCost());
+        assertEquals(3L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price1 * 3), cartService.getCartTotalsOutputDto().getTotalCost());
         cartService.addPhone(phoneId2, 1L);
         assertEquals(2L, cart.getItems().size());
-        assertEquals(4L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(price1 * 3 + price2), cartService.getTotalCost());
+        assertEquals(4L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price1 * 3 + price2), cartService.getCartTotalsOutputDto().getTotalCost());
     }
 
     @Test(expected = OutOfStockException.class)
@@ -88,8 +90,8 @@ public class HttpSessionCartServiceTest {
         items.put(phoneId1, 1L);
         cartService.update(items);
         assertEquals(2L, cart.getItems().size());
-        assertEquals(2L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(price1 + price2), cartService.getTotalCost());
+        assertEquals(2L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price1 + price2), cartService.getCartTotalsOutputDto().getTotalCost());
     }
 
     @Test(expected = OutOfStockException.class)
@@ -112,16 +114,33 @@ public class HttpSessionCartServiceTest {
         initializeCart();
         cartService.remove(phoneId1);
         assertEquals(1L, cart.getItems().size());
-        assertEquals(1L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(price2), cartService.getTotalCost());
+        assertEquals(1L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price2), cartService.getCartTotalsOutputDto().getTotalCost());
         cartService.remove(phoneId1);
         assertEquals(1L, cart.getItems().size());
-        assertEquals(1L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(price2), cartService.getTotalCost());
+        assertEquals(1L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price2), cartService.getCartTotalsOutputDto().getTotalCost());
         cartService.remove(phoneId2);
         assertEquals(0L, cart.getItems().size());
-        assertEquals(0L, cartService.getTotalQuantity().longValue());
-        assertEquals(new BigDecimal(0), cartService.getTotalCost());
+        assertEquals(0L, cartService.getCartTotalsOutputDto().getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(0), cartService.getCartTotalsOutputDto().getTotalCost());
+    }
+
+    @Test
+    public void testGetCartTotalsOutputDto() {
+        initializeCart();
+        CartTotalsOutputDto cartTotalsOutputDto = cartService.getCartTotalsOutputDto();
+        assertEquals(3L, cartTotalsOutputDto.getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price1 * quantity1 + price2 * quantity2), cartTotalsOutputDto.getTotalCost());
+    }
+
+    @Test
+    public void testGetCartTotalsOutputDtoCartCopy() {
+        initializeCart();
+        Map<Long, Long> copyCartItems = new HashMap<>(cart.getItems());
+        CartTotalsOutputDto cartTotalsOutputDto = cartService.getCartTotalsOutputDto(copyCartItems);
+        assertEquals(3L, cartTotalsOutputDto.getTotalQuantity().longValue());
+        assertEquals(new BigDecimal(price1 * quantity1 + price2 * quantity2), cartTotalsOutputDto.getTotalCost());
     }
 
     public void initializeData() {
@@ -152,7 +171,6 @@ public class HttpSessionCartServiceTest {
 
     private void initializeCart() {
         initializeData();
-        Long quantity1 = 2L, quantity2 = 1L;
         cart = cartService.getCart();
         Map<Long, Long> items = cart.getItems();
         items.put(phoneId1, quantity1);

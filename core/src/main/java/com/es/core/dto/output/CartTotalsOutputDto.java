@@ -1,14 +1,14 @@
-package com.es.phoneshop.web.dto.output;
+package com.es.core.dto.output;
 
 import java.math.BigDecimal;
 
-public class CartOutputDto {
+public class CartTotalsOutputDto {
     private Long totalQuantity;
     private BigDecimal totalCost;
 
-    public CartOutputDto() {}
+    public CartTotalsOutputDto() {}
 
-    public CartOutputDto( final Long totalQuantity, final BigDecimal totalCost ) {
+    public CartTotalsOutputDto(final Long totalQuantity, final BigDecimal totalCost ) {
         this.totalQuantity = totalQuantity;
         this.totalCost = totalCost;
     }

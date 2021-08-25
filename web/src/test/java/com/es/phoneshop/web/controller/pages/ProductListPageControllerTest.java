@@ -1,6 +1,7 @@
 package com.es.phoneshop.web.controller.pages;
 
 import com.es.core.dao.PhoneDao;
+import com.es.core.dto.output.CartTotalsOutputDto;
 import com.es.core.service.CartService;
 import com.es.core.service.PaginationService;
 import org.junit.Before;
@@ -42,6 +43,7 @@ public class ProductListPageControllerTest {
                                  .build();
         when(paginationService.getOffset(10, 1)).thenReturn(0L);
         when(paginationService.getTotalPagesNumber(10, null)).thenReturn(100L);
+        when(cartService.getCartTotalsOutputDto()).thenReturn(new CartTotalsOutputDto());
         when(phoneDao.findAll( null, "price", "desc", 0L, 10)).thenReturn(new ArrayList<>());
     }
 
@@ -63,6 +65,9 @@ public class ProductListPageControllerTest {
 
         verify(paginationService, times(1)).getOffset(10, 1);
         verify(paginationService, times(1)).getTotalPagesNumber(10, null);
+        verifyNoMoreInteractions(paginationService);
+
+        verify(cartService, times(1)).getCartTotalsOutputDto();
         verifyNoMoreInteractions(paginationService);
 
         verify(phoneDao, times(1)).findAll( null, "price", "desc", 0L, 10);

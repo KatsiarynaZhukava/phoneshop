@@ -78,7 +78,7 @@
           </td>
           <form>
             <td>
-              <input id="quantity${phone.id}" name="requestedQuantity" class="form-control">
+              <input id="quantity${phone.id}" name="requestedQuantity" autocomplete="off" class="form-control">
               <input id="phoneId" value="${phone.id}" type="hidden">
                 <p id="message${phone.id}" class="message"></p>
             </td>
