@@ -4,6 +4,7 @@ import com.es.core.dao.PhoneDao;
 import com.es.core.dao.StockDao;
 import com.es.core.dto.output.CartTotalsOutputDto;
 import com.es.core.exception.OutOfStockException;
+import com.es.core.exception.OutOfStockItem;
 import com.es.core.model.cart.Cart;
 import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.Stock;
@@ -12,7 +13,10 @@ import org.springframework.web.context.annotation.SessionScope;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -61,7 +65,7 @@ public class HttpSessionCartService implements CartService {
                                                                       Function.identity()) );
         lock.lock();
         try {
-            List<OutOfStockException.OutOfStockItem> outOfStockItems = new ArrayList<>();
+            List<OutOfStockItem> outOfStockItems = new ArrayList<>();
             for(Map.Entry<Long, Long> item : items.entrySet()) {
                 Long itemKey = item.getKey();
                 Long stockRequested = item.getValue();
@@ -69,10 +73,10 @@ public class HttpSessionCartService implements CartService {
                 if (stocks.containsKey(itemKey)) {
                     Long stockAvailable = stocks.get(itemKey).getStock();
                     if (stockAvailable < stockRequested) {
-                        outOfStockItems.add(new OutOfStockException.OutOfStockItem(itemKey, stockRequested, stockAvailable));
+                        outOfStockItems.add(new OutOfStockItem(itemKey, stockRequested, stockAvailable));
                     }
                 } else {
-                    outOfStockItems.add(new OutOfStockException.OutOfStockItem(itemKey, stockRequested, 0L));
+                    outOfStockItems.add(new OutOfStockItem(itemKey, stockRequested, 0L));
                 }
             }
             if (outOfStockItems.isEmpty()) {
