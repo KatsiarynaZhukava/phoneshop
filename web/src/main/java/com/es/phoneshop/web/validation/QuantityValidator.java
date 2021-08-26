@@ -31,7 +31,7 @@ public class QuantityValidator implements Validator {
         CartInputDto cartInputDto = (CartInputDto) o;
         List<CartItemInputDto> items = new ArrayList<>(cartInputDto.getItems());
 
-        Map<Long, Stock> stocks = stockDao.findAll( new ArrayList<>(items.stream().map(CartItemInputDto::getPhoneId).collect(Collectors.toList())))
+        Map<Long, Stock> stocks = stockDao.findAll( items.stream().map(CartItemInputDto::getPhoneId).collect(Collectors.toList()))
                                           .stream()
                                           .collect( Collectors.toMap( stock -> stock.getPhone().getId(),
                                                                       Function.identity()) );

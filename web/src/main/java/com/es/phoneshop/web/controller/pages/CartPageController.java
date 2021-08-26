@@ -5,8 +5,10 @@ import com.es.core.dto.input.CartInputDto;
 import com.es.core.dto.input.CartItemInputDto;
 import com.es.core.dto.output.DetailedCartOutputDto;
 import com.es.core.exception.OutOfStockException;
+import com.es.core.exception.OutOfStockItem;
 import com.es.core.model.phone.Phone;
 import com.es.core.service.CartService;
+import com.es.core.util.PhoneShopMessages;
 import com.es.phoneshop.web.validation.QuantityValidator;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,7 +49,7 @@ public class CartPageController {
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 
         Map<Long, Long> copyCartItems = new HashMap<>(cartService.getCart().getItems());
-        model.addAttribute("cart", cartService.getCartTotalsOutputDto());
+        model.addAttribute("cart", cartService.getCartTotalsOutputDto(copyCartItems));
 
         List<Phone> phones = phoneDao.findAll(new ArrayList<>(copyCartItems.keySet()));
         DetailedCartOutputDto detailedCartOutputDto =
@@ -81,11 +83,18 @@ public class CartPageController {
                 cartService.update(itemQuantities);
             } catch (OutOfStockException e) {
                 redirectAttributes.addFlashAttribute("updateMessage", "Error updating the cart");
-                for ( OutOfStockException.OutOfStockItem item: e.getItems() ) {
-                    int index = cartInputDto.getItems().indexOf(new CartItemInputDto(item.getPhoneId(), item.getStockRequested()));
-                    bindingResult.rejectValue("items[" + index + "].requestedQuantity", "Stock exceeded",
-                                              MessageFormat.format( "The overall requested stock {0} exceeds the available {1}",
-                                                                    item.getStockRequested(), item.getStockAvailable() ));
+                Map<Long, OutOfStockItem> outOfStockItems = e.getItems().stream()
+                                                                        .collect( Collectors.toMap( OutOfStockItem::getPhoneId,
+                                                                                                    Function.identity() ));
+                List<CartItemInputDto> cartItems = cartInputDto.getItems();
+                for (int i = 0; i < cartItems.size(); i++) {
+                    Long phoneId = cartItems.get(i).getPhoneId();
+                    if (outOfStockItems.containsKey(phoneId)) {
+                        bindingResult.rejectValue("items[" + i + "].requestedQuantity", "Stock exceeded",
+                                                  MessageFormat.format( PhoneShopMessages.OUT_OF_STOCK_MESSAGE,
+                                                                        outOfStockItems.get(phoneId).getStockRequested(),
+                                                                        outOfStockItems.get(phoneId).getStockAvailable()));
+                    }
                 }
             }
         }
