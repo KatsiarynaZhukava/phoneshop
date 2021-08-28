@@ -24,6 +24,10 @@
         <constructor-arg value="com.es.core.model.phone.Phone"/>
     </bean>
 
+    <bean id="orderBeanPropertyRowMapper" class="org.springframework.jdbc.core.BeanPropertyRowMapper">
+        <constructor-arg value="com.es.core.model.order.Order"/>
+    </bean>
+
     <bean id="longSingleColumnRowMapper" class="org.springframework.jdbc.core.SingleColumnRowMapper">
         <constructor-arg value="java.lang.Long"/>
     </bean>

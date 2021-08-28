@@ -1,4 +1,4 @@
-table, .no-items-message {
+.no-items-message {
     margin-top: 100px;
 }
 .action-buttons-container {
@@ -11,7 +11,4 @@ table, .no-items-message {
 .action-buttons-container button {
     min-width: 100px;
     margin: 0 10px;
-}
-.container {
-    margin-top: 100px;
 }

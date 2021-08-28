@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <div id="cartItemsContainer" class="container">
+  <div class="container">
     <c:choose>
       <c:when test="${empty detailedCart.items}">
         <p class="no-items-message">No items in your cart</p>
@@ -73,7 +73,9 @@
             <button form="updateCartForm" type="submit" class="btn btn-primary">Update</button>
           </div>
           <div>
-            <button class="btn btn-primary">Order</button>
+            <a href="<c:url value="/order"/>">
+              <button class="btn btn-primary">Order</button>
+            </a>
           </div>
         </div>
       </c:otherwise>

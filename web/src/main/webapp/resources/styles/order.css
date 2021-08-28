@@ -1,0 +1,15 @@
+.container {
+    margin-top: 100px;
+}
+.form-field {
+    max-width: 300px;
+}
+.error-field {
+    margin-left: 120px;
+}
+label {
+    min-width: 120px;
+}
+.textarea-form-field {
+    max-width: 420px;
+}
