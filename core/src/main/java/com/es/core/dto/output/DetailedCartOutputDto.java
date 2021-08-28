@@ -5,11 +5,11 @@ import com.es.core.model.phone.Phone;
 import java.util.Map;
 
 public class DetailedCartOutputDto {
-    Map<Phone, Long> items;
+    private Map<Phone, Long> items;
 
-    public DetailedCartOutputDto() {}
+    public DetailedCartOutputDto() { }
 
-    public DetailedCartOutputDto(final Map<Phone, Long> items ) {
+    public DetailedCartOutputDto( final Map<Phone, Long> items ) {
         this.items = items;
     }
 

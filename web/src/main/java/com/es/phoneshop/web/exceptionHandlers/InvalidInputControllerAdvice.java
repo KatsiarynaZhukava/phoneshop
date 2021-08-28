@@ -1,7 +1,7 @@
 package com.es.phoneshop.web.exceptionHandlers;
 
 import com.es.phoneshop.web.exception.InvalidInputException;
-import com.es.phoneshop.web.exception.NotFoundException;
+import com.es.core.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

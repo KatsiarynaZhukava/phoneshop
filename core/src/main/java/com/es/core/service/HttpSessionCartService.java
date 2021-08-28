@@ -110,12 +110,27 @@ public class HttpSessionCartService implements CartService {
         Long totalQuantity = cartItems.values().stream()
                                                .reduce(Long::sum)
                                                .orElse(0L);
+        BigDecimal totalCost = getTotalCost(cartItems);
+        return new CartTotalsOutputDto(totalQuantity, totalCost);
+    }
+
+    @Override
+    public BigDecimal getTotalCost( final Map<Long, Long> cartItems ) {
         Map<Long, BigDecimal> phonePrices = phoneDao.findAll(new ArrayList<>(cartItems.keySet()))
                                                     .stream()
                                                     .collect(Collectors.toMap( Phone::getId, Phone::getPrice ));
-        BigDecimal totalCost = cartItems.entrySet().stream()
-                                                   .map(entry -> new BigDecimal(entry.getValue()).multiply(phonePrices.get(entry.getKey())))
-                                                   .reduce( BigDecimal.ZERO, BigDecimal::add );
-        return new CartTotalsOutputDto(totalQuantity, totalCost);
+        return cartItems.entrySet().stream()
+                                   .map(entry -> new BigDecimal(entry.getValue()).multiply(phonePrices.get(entry.getKey())))
+                                   .reduce( BigDecimal.ZERO, BigDecimal::add );
+    }
+
+    @Override
+    public void clearCart() {
+        lock.lock();
+        try {
+            cart.getItems().clear();
+        } finally {
+            lock.unlock();
+        }
     }
 }

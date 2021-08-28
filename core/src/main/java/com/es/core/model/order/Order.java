@@ -3,26 +3,47 @@ package com.es.core.model.order;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class Order
-{
+public class Order {
     private Long id;
     private List<OrderItem> orderItems;
-    /**
-     *  A sum of order item prices;
-     */
+
     private BigDecimal subtotal;
     private BigDecimal deliveryPrice;
-    /**
-     * <code>subtotal</code> + <code>deliveryPrice</code>
-     */
     private BigDecimal totalPrice;
 
     private String firstName;
     private String lastName;
     private String deliveryAddress;
     private String contactPhoneNo;
+    private String additionalInfo;
 
     private OrderStatus status;
+
+    public Order() { }
+
+    public Order( final Long id,
+                  final List<OrderItem> orderItems,
+                  final BigDecimal subtotal,
+                  final BigDecimal deliveryPrice,
+                  final BigDecimal totalPrice,
+                  final String firstName,
+                  final String lastName,
+                  final String deliveryAddress,
+                  final String contactPhoneNo,
+                  final String additionalInfo,
+                  final OrderStatus status ) {
+        this.id = id;
+        this.orderItems = orderItems;
+        this.subtotal = subtotal;
+        this.deliveryPrice = deliveryPrice;
+        this.totalPrice = totalPrice;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.deliveryAddress = deliveryAddress;
+        this.contactPhoneNo = contactPhoneNo;
+        this.additionalInfo = additionalInfo;
+        this.status = status;
+    }
 
     public Long getId() {
         return id;
@@ -95,6 +116,10 @@ public class Order
     public void setContactPhoneNo(String contactPhoneNo) {
         this.contactPhoneNo = contactPhoneNo;
     }
+
+    public String getAdditionalInfo() { return additionalInfo; }
+
+    public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
 
     public OrderStatus getStatus() {
         return status;

@@ -7,13 +7,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
 public class JdbcStockDao implements StockDao {
     private static final String SELECT_STOCK_BY_PHONE_ID_QUERY = "select * from stocks where phoneId = ?";
     private static final String SELECT_STOCKS_BY_PHONE_IDS_PART = "select * from stocks where phoneId in (";
+    private static final String UPDATE_STOCKS_QUERY = "update stocks set stock = stock - ? where phoneId = ?";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -37,5 +40,15 @@ public class JdbcStockDao implements StockDao {
         }
         sqlQuery.replace(sqlQuery.length() - 1, sqlQuery.length(), ")");
         return jdbcTemplate.query(sqlQuery.toString(), phoneIds.toArray(), stockRowMapper);
+    }
+
+    @Override
+    public void update( final Map<Long, Long> requestedStocks ) {
+        List<Object[]> batch = new ArrayList<>();
+        for (Map.Entry<Long, Long> phoneStock : requestedStocks.entrySet()) {
+            Object[] values = new Object[]{ phoneStock.getValue(), phoneStock.getKey() };
+            batch.add(values);
+        }
+        jdbcTemplate.batchUpdate(UPDATE_STOCKS_QUERY, batch);
     }
 }

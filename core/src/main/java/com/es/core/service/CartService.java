@@ -4,6 +4,7 @@ import com.es.core.dto.output.CartTotalsOutputDto;
 import com.es.core.exception.OutOfStockException;
 import com.es.core.model.cart.Cart;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 public interface CartService {
@@ -13,4 +14,6 @@ public interface CartService {
     void remove(Long phoneId);
     CartTotalsOutputDto getCartTotalsOutputDto();
     CartTotalsOutputDto getCartTotalsOutputDto( final Map<Long, Long> cartItems );
+    BigDecimal getTotalCost(final Map<Long, Long> cartItems);
+    void clearCart();
 }
