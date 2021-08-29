@@ -133,4 +133,9 @@ public class HttpSessionCartService implements CartService {
             lock.unlock();
         }
     }
+
+    @Override
+    public boolean isEmpty() {
+        return cart.getItems().isEmpty();
+    }
 }

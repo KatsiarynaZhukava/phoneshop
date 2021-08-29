@@ -62,7 +62,7 @@
           <tags:userFormField fieldName="deliveryAddress" labelValue="Address*"/>
           <tags:userFormField fieldName="contactPhoneNo" labelValue="Phone*"/>
           <div class="form-group row">
-              <form:textarea path="additionalInfo" placeholder="Additional information" class="form-control textarea-form-field"/>
+              <form:textarea autocomplete="off"  path="additionalInfo" placeholder="Additional information" class="form-control textarea-form-field"/>
           </div>
           <div class="form-group row">
               <button type="submit" class="btn btn-primary">Order</button>

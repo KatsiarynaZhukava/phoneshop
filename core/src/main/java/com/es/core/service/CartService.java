@@ -16,4 +16,5 @@ public interface CartService {
     CartTotalsOutputDto getCartTotalsOutputDto( final Map<Long, Long> cartItems );
     BigDecimal getTotalCost(final Map<Long, Long> cartItems);
     void clearCart();
+    boolean isEmpty();
 }

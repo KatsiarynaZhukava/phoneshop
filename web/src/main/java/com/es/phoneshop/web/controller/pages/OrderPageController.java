@@ -29,8 +29,9 @@ public class OrderPageController {
     @GetMapping
     public String getOrder( final Model model,
                             final HttpServletResponse response ) {
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        if (cartService.isEmpty()) return "redirect:/productList";
 
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         Order order = orderService.createOrder(cartService.getCart());
         model.addAttribute("order", order);
         if (!model.containsAttribute("userInputDto")) {
@@ -40,7 +41,7 @@ public class OrderPageController {
     }
 
     @PostMapping
-    public String placeOrder( final @ModelAttribute("userInputDto") @Valid UserInputDto userInputDto,
+    public String placeOrder( @ModelAttribute("userInputDto") @Valid UserInputDto userInputDto,
                               final BindingResult bindingResult,
                               final RedirectAttributes redirectAttributes ) {
         if (bindingResult.hasErrors()) {
@@ -52,9 +53,9 @@ public class OrderPageController {
             try {
                 orderService.placeOrder(order);
                 cartService.clearCart();
-                return "redirect:/orderOverview/" + order.getId();
+                return "redirect:/orderOverview/" + order.getSecureId();
             } catch (OutOfStockException e) {
-                redirectAttributes.addFlashAttribute("orderErrorMessage", "Some items in your cart went out of stock and got removed");
+                redirectAttributes.addFlashAttribute("orderErrorMessage", "Some items in your cart ran out of stock and got removed");
                 redirectAttributes.addFlashAttribute("userInputDto", userInputDto);
                 return "redirect:/order";
             }

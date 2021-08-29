@@ -1,5 +1,6 @@
 package com.es.core.dao;
 
+import com.es.core.TestUtils;
 import com.es.core.model.phone.Color;
 import com.es.core.model.phone.Phone;
 import org.junit.Before;
@@ -59,7 +60,7 @@ public class JdbcPhoneDaoIntTest {
         Optional<Phone> phoneFromDb = phoneDao.get(2000L);
         Phone expected = initializePhone();
         assertTrue(phoneFromDb.isPresent());
-        assertPhonesEquality(expected, phoneFromDb.get());
+        TestUtils.assertPhonesEquality(expected, phoneFromDb.get());
     }
 
     @Test
@@ -82,7 +83,7 @@ public class JdbcPhoneDaoIntTest {
         Optional<Phone> phoneFromDb = phoneDao.get(phoneId);
 
         assertTrue(phoneFromDb.isPresent());
-        assertPhonesEquality(phoneToSave, phoneFromDb.get());
+        TestUtils.assertPhonesEquality(phoneToSave, phoneFromDb.get());
         assertEquals(oldPhone2ColorRecordsNumber + 1, newPhone2ColorRecordsNumber);
     }
 
@@ -100,7 +101,7 @@ public class JdbcPhoneDaoIntTest {
         Optional<Phone> phoneFromDb = phoneDao.get(phoneId);
 
         assertTrue(phoneFromDb.isPresent());
-        assertPhonesEquality(phoneToSave, phoneFromDb.get());
+        TestUtils.assertPhonesEquality(phoneToSave, phoneFromDb.get());
         assertEquals(oldPhone2ColorRecordsNumber + phoneToSave.getColors().size(), newPhone2ColorRecordsNumber);
     }
 
@@ -116,7 +117,7 @@ public class JdbcPhoneDaoIntTest {
         Optional<Phone> phoneAfterSaving = phoneDao.get(phoneId);
 
         assertTrue(phoneAfterSaving.isPresent());
-        assertPhonesEquality(phoneToSave.get(), phoneAfterSaving.get());
+        TestUtils.assertPhonesEquality(phoneToSave.get(), phoneAfterSaving.get());
         assertEquals(oldPhone2ColorRecordsNumber, newPhone2ColorRecordsNumber);
     }
 
@@ -264,36 +265,6 @@ public class JdbcPhoneDaoIntTest {
     @Test
     public void testGetTotalNumberWithSearchQuery() {
         assertEquals(3, phoneDao.getTotalNumber("Alcatel"));
-    }
-
-    private void assertPhonesEquality( final Phone expected, final Phone actual ) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getBrand(), actual.getBrand());
-        assertEquals(expected.getModel(), actual.getModel());
-        assertEquals(expected.getPrice(), actual.getPrice());
-        assertEquals(expected.getDisplaySizeInches(), actual.getDisplaySizeInches());
-        assertEquals(expected.getWeightGr(), actual.getWeightGr());
-        assertEquals(expected.getLengthMm(), actual.getLengthMm());
-        assertEquals(expected.getWidthMm(), actual.getWidthMm());
-        assertEquals(expected.getHeightMm(), actual.getHeightMm());
-        assertEquals(expected.getAnnounced(), actual.getAnnounced());
-        assertEquals(expected.getDeviceType(), actual.getDeviceType());
-        assertEquals(expected.getOs(), actual.getOs());
-        assertEquals(expected.getColors(), actual.getColors());
-        assertEquals(expected.getDisplayResolution(), actual.getDisplayResolution());
-        assertEquals(expected.getPixelDensity(), actual.getPixelDensity());
-        assertEquals(expected.getDisplayTechnology(), actual.getDisplayTechnology());
-        assertEquals(expected.getBackCameraMegapixels(), actual.getBackCameraMegapixels());
-        assertEquals(expected.getFrontCameraMegapixels(), actual.getFrontCameraMegapixels());
-        assertEquals(expected.getRamGb(), actual.getRamGb());
-        assertEquals(expected.getInternalStorageGb(), actual.getInternalStorageGb());
-        assertEquals(expected.getBatteryCapacityMah(), actual.getBatteryCapacityMah());
-        assertEquals(expected.getTalkTimeHours(), actual.getTalkTimeHours());
-        assertEquals(expected.getStandByTimeHours(), actual.getStandByTimeHours());
-        assertEquals(expected.getBluetooth(), actual.getBluetooth());
-        assertEquals(expected.getPositioning(), actual.getPositioning());
-        assertEquals(expected.getImageUrl(), actual.getImageUrl());
-        assertEquals(expected.getDescription(), actual.getDescription());
     }
 
     private Phone initializePhone() {

@@ -19,6 +19,10 @@
     <url-pattern>/</url-pattern>
   </servlet-mapping>
 
+  <error-page>
+    <location>/errors</location>
+  </error-page>
+
   <filter>
     <filter-name>httpMethodFilter</filter-name>
     <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>

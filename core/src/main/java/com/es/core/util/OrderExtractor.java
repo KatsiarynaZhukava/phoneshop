@@ -26,6 +26,8 @@ public class OrderExtractor implements ResultSetExtractor<List<Order>> {
 
     @Override
     public List<Order> extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+        if (!resultSet.isBeforeFirst()) return null;
+
         Order order = null;
         List<OrderItem> orderItems = new ArrayList<>();
         Map<Long, Long> phoneQuantities = new HashMap<>();
@@ -41,7 +43,7 @@ public class OrderExtractor implements ResultSetExtractor<List<Order>> {
                                           .stream()
                                           .collect( Collectors.toMap( Phone::getId,
                                                                       Function.identity() ));
-        for (Long phoneId: phoneQuantities.keySet()) {
+        for (Long phoneId : phoneQuantities.keySet()) {
             Phone phone = phones.get(phoneId);
             if (phone != null) {
                 orderItems.add(new OrderItem(null, phone, order, phoneQuantities.get(phoneId)));

@@ -16,8 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 
@@ -141,6 +140,26 @@ public class HttpSessionCartServiceTest {
         CartTotalsOutputDto cartTotalsOutputDto = cartService.getCartTotalsOutputDto(copyCartItems);
         assertEquals(3L, cartTotalsOutputDto.getTotalQuantity().longValue());
         assertEquals(new BigDecimal(price1 * quantity1 + price2 * quantity2), cartTotalsOutputDto.getTotalCost());
+    }
+
+    @Test
+    public void testIsEmptyEmptyCart() {
+        cartService.clearCart();
+        assertTrue(cartService.isEmpty());
+    }
+
+    @Test
+    public void testIsEmptyNotEmptyCart() {
+        initializeCart();
+        assertFalse(cartService.isEmpty());
+    }
+
+    @Test
+    public void testClearCart() {
+        initializeCart();
+        assertFalse(cartService.isEmpty());
+        cartService.clearCart();
+        assertTrue(cartService.isEmpty());
     }
 
     public void initializeData() {

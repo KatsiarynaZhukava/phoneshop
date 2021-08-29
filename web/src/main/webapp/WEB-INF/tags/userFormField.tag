@@ -6,7 +6,7 @@
 <div class="form-group">
     <div class="row">
         <label for="${fieldName}">${labelValue}</label>
-        <form:input path="${fieldName}" class="form-control form-field "/>
+        <form:input path="${fieldName}" autocomplete="off"  class="form-control form-field "/>
     </div>
     <div class="row">
         <form:errors path="${fieldName}" class="message form-field error-field"/>

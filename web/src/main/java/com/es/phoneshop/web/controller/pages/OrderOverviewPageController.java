@@ -17,12 +17,12 @@ public class OrderOverviewPageController {
     @Resource
     private OrderDao orderDao;
 
-    @GetMapping(value = "/{orderId}")
-    public String getOrder( final @PathVariable Long orderId,
+    @GetMapping(value = "/{secureId}")
+    public String getOrder( final @PathVariable String secureId,
                             final Model model ) {
-        model.addAttribute("order", orderDao.get(orderId)
+        model.addAttribute("order", orderDao.get(secureId)
                                                         .orElseThrow( NotFoundException.supplier( PhoneShopMessages.ORDER_NOT_FOUND_BY_ID,
-                                                                                                  orderId )));
+                                                                                                  secureId )));
         return "orderOverview";
     }
 }
