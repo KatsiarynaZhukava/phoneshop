@@ -20,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,6 +53,7 @@ public class OrderServiceImpl implements OrderService {
                 throw new NotFoundException(PhoneShopMessages.PHONE_NOT_FOUND_BY_ID_MESSAGE, cartItem.getKey());
             }
         }
+        order.setSecureId(UUID.randomUUID().toString());
         order.setOrderItems(orderItems);
         order.setSubtotal(cartService.getTotalCost(cartItems));
         order.setDeliveryPrice(deliveryPrice);

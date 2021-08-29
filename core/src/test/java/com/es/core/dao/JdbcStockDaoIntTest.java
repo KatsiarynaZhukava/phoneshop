@@ -1,20 +1,19 @@
 package com.es.core.dao;
 
+import com.es.core.TestUtils;
 import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.Stock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -61,7 +60,7 @@ public class JdbcStockDaoIntTest {
         expected.getPhone().setId(phoneId);
 
         assertTrue(stockFromDb.isPresent());
-        assertStocksEquality(expected, stockFromDb.get());
+        TestUtils.assertStocksEquality(expected, stockFromDb.get());
     }
 
     @Test
@@ -92,9 +91,22 @@ public class JdbcStockDaoIntTest {
         assertEquals(7L, stocks.get(2).getReserved().longValue());
     }
 
-    private void assertStocksEquality( Stock expected, Stock actual ) {
-        assertEquals(expected.getPhone().getId(), actual.getPhone().getId());
-        assertEquals(expected.getStock(), actual.getStock());
-        assertEquals(expected.getReserved(), actual.getReserved());
+    @Test
+    public void testUpdateStocks() {
+        Map<Long, Long> requestedStocks = new HashMap<>();
+        requestedStocks.put(2000L, 3L);
+        requestedStocks.put(2001L, 2L);
+        stockDao.update(requestedStocks);
+        List<Stock> stocks = stockDao.findAll(new ArrayList<>(requestedStocks.keySet()));
+        assertEquals(10L - 3L, stocks.get(0).getStock().longValue());
+        assertEquals(9L - 2L, stocks.get(1).getStock().longValue());
+    }
+
+    @Test(expected = DataIntegrityViolationException.class)
+    public void testUpdateStocksStockExceeded() {
+        Map<Long, Long> requestedStocks = new HashMap<>();
+        requestedStocks.put(2000L, 42L);
+        requestedStocks.put(2001L, 2L);
+        stockDao.update(requestedStocks);
     }
 }

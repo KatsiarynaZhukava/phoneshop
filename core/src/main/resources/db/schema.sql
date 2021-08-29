@@ -58,6 +58,7 @@ create table stocks (
 
 create table orders (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  secureId VARCHAR(50) NOT NULL,
   subtotal FLOAT NOT NULL,
   deliveryPrice FLOAT NOT NULL,
   firstName VARCHAR(50) NOT NULL,
@@ -65,7 +66,7 @@ create table orders (
   deliveryAddress VARCHAR(100) NOT NULL,
   contactPhoneNo VARCHAR(50) NOT NULL,
   additionalInfo VARCHAR(200) NOT NULL,
-  status VARCHAR(50)
+  status ENUM('NEW', 'DELIVERED', 'REJECTED') NOT NULL
 );
 
 create table phone2order (

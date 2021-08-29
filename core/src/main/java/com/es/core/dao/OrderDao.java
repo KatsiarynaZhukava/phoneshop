@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface OrderDao {
     Optional<Order> get(Long key);
+    Optional<Order> get(String secureId);
     void save(Order order);
     boolean exists( long id );
 }

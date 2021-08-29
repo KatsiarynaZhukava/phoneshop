@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +19,12 @@ import java.util.Optional;
 @Component
 public class JdbcOrderDao implements OrderDao {
     private static final String SELECT_ORDER_BY_ID_QUERY = "select * from orders left join phone2order on orders.id = phone2order.orderId where id = ?";
+    private static final String SELECT_ORDER_BY_SECURE_ID_QUERY = "select * from orders left join phone2order on orders.id = phone2order.orderId where secureId = ?";
     private static final String CHECK_ORDER_EXISTS_BY_ID_QUERY = "select 1 from orders where id = ?";
     private static final String DELETE_PHONE2ORDER_QUERY = "delete from phone2order where orderId = ?";
     private static final String INSERT_INTO_PHONE2ORDER_QUERY = "insert into phone2order (phoneId, orderId, quantity) values (?, ?, ?)";
-    private static final String INSERT_INTO_ORDERS_QUERY = "insert into orders (subtotal, deliveryPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, statusId, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_ORDERS_QUERY = "update orders set subtotal = ?, deliveryPrice = ?, firstName = ?, lastName = ?, deliveryAddress = ?, contactPhoneNo = ?, additionalInfo = ? where id = ?";
+    private static final String INSERT_INTO_ORDERS_QUERY = "insert into orders (secureId, subtotal, deliveryPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_ORDERS_QUERY = "update orders set secureId = ?, subtotal = ?, deliveryPrice = ?, firstName = ?, lastName = ?, deliveryAddress = ?, contactPhoneNo = ?, additionalInfo = ?, status = ? where id = ?";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -41,14 +43,21 @@ public class JdbcOrderDao implements OrderDao {
     @Override
     public Optional<Order> get( final Long key ) {
         List<Order> orders = jdbcTemplate.query(SELECT_ORDER_BY_ID_QUERY, new Object[]{ key }, orderExtractor);
-        return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
+        return orders == null ? Optional.empty() : Optional.of(orders.get(0));
+    }
+
+    @Override
+    public Optional<Order> get( final String secureId ) {
+        List<Order> orders = jdbcTemplate.query(SELECT_ORDER_BY_SECURE_ID_QUERY, new Object[]{ secureId }, orderExtractor);
+        return orders == null ? Optional.empty() : Optional.of(orders.get(0));
     }
 
     @Override
     public void save( final Order order ) {
-        Object[] fields = new Object[] { order.getSubtotal(), order.getDeliveryPrice(), order.getFirstName(),
-                                         order.getLastName(), order.getDeliveryAddress(), order.getContactPhoneNo(),
-                                         order.getAdditionalInfo(), order.getStatus().toString(), order.getId() };
+        Object[] fields = new Object[] { order.getSecureId(), order.getSubtotal(), order.getDeliveryPrice(),
+                                         order.getFirstName(), order.getLastName(), order.getDeliveryAddress(),
+                                         order.getContactPhoneNo(), order.getAdditionalInfo(), order.getStatus().toString(),
+                                         order.getId() };
         Long id = order.getId();
         if (id != null) {
             if (exists(id)) {
@@ -58,7 +67,18 @@ public class JdbcOrderDao implements OrderDao {
                 jdbcTemplate.update(INSERT_INTO_ORDERS_QUERY, fields);
             }
         } else {
-            BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(order);
+            BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(order) {
+                @Override
+                public int getSqlType(String var) {
+                    int sqlType = super.getSqlType(var);
+                    if (sqlType == TYPE_UNKNOWN && hasValue(var)) {
+                        if (getValue(var).getClass().isEnum()) {
+                            sqlType = Types.VARCHAR;
+                        }
+                    }
+                    return sqlType;
+                }
+            };
             id = simpleJdbcInsert.executeAndReturnKey(parameterSource).longValue();
             order.setId(id);
         }
