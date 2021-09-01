@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Order {
     private Long id;
-    private String secureId;
     private List<OrderItem> orderItems;
 
     private BigDecimal subtotal;
@@ -23,7 +22,6 @@ public class Order {
     public Order() { }
 
     public Order( final Long id,
-                  final String secureId,
                   final List<OrderItem> orderItems,
                   final BigDecimal subtotal,
                   final BigDecimal deliveryPrice,
@@ -35,7 +33,6 @@ public class Order {
                   final String additionalInfo,
                   final OrderStatus status ) {
         this.id = id;
-        this.secureId = secureId;
         this.orderItems = orderItems;
         this.subtotal = subtotal;
         this.deliveryPrice = deliveryPrice;
@@ -55,10 +52,6 @@ public class Order {
     public void setId(Long id) {
         this.id = id;
     }
-
-    public String getSecureId() { return secureId; }
-
-    public void setSecureId(String secureId) { this.secureId = secureId; }
 
     public List<OrderItem> getOrderItems() { return orderItems; }
 

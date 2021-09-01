@@ -125,10 +125,22 @@ public class HttpSessionCartService implements CartService {
     }
 
     @Override
-    public void clearCart() {
+    public void clearCart( final Map<Long, Long> cartItems ) {
         lock.lock();
         try {
-            cart.getItems().clear();
+            Map<Long, Long> currentCartItems = cart.getItems();
+
+            for(Map.Entry<Long, Long> cartItem: cartItems.entrySet()) {
+                Long itemKey = cartItem.getKey();
+                if (currentCartItems.containsKey(itemKey)) {
+                    Long stockDelta = currentCartItems.get(itemKey) - cartItem.getValue();
+                    if (stockDelta > 0) {
+                        currentCartItems.put(itemKey, stockDelta);
+                    } else {
+                        currentCartItems.remove(itemKey);
+                    }
+                }
+            }
         } finally {
             lock.unlock();
         }

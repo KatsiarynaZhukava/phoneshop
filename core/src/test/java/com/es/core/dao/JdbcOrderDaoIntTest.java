@@ -58,12 +58,12 @@ public class JdbcOrderDaoIntTest {
         jdbcTemplate.execute("insert into stocks (phoneId, stock, reserved) values (2003, 29, 7)");
         jdbcTemplate.execute("insert into stocks (phoneId, stock, reserved) values (2004, 0, 0)");
 
-        jdbcTemplate.execute("insert into orders (secureId, subtotal, deliveryPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status) values ('secureId1', 680, 5, 'Vasily', 'Pupkin', 'Nezaleznosci av. 1-1', '+375331234567', '', 'NEW')");
-        jdbcTemplate.execute("insert into orders (secureId, subtotal, deliveryPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status) values ('secureId2', 710.0, 5, 'Vasily', 'Pupkin', 'Nezaleznosci av. 1-1', '+375331234567', '', 'NEW')");
+        jdbcTemplate.execute("insert into orders (subtotal, deliveryPrice, totalPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status) values (680, 5, 685, 'Vasily', 'Pupkin', 'Nezaleznosci av. 1-1', '+375331234567', '', 'NEW')");
+        jdbcTemplate.execute("insert into orders (subtotal, deliveryPrice, totalPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status) values (710.0, 5, 715, 'Vasily', 'Pupkin', 'Nezaleznosci av. 1-1', '+375331234567', '', 'NEW')");
 
-        jdbcTemplate.execute("insert into phone2order (orderId, phoneId, quantity) values (1, 2001, 2)");
-        jdbcTemplate.execute("insert into phone2order (orderId, phoneId, quantity) values (1, 2000, 1)");
-        jdbcTemplate.execute("insert into phone2order (orderId, phoneId, quantity) values (2, 2003, 1)");
+        jdbcTemplate.execute("insert into phone2order (orderId, phoneId, quantity, purchaseTimePrice) values (1, 2001, 2, 200.0)");
+        jdbcTemplate.execute("insert into phone2order (orderId, phoneId, quantity, purchaseTimePrice) values (1, 2000, 1, 240.0)");
+        jdbcTemplate.execute("insert into phone2order (orderId, phoneId, quantity, purchaseTimePrice) values (2, 2003, 1, 710.0)");
     }
 
     @Test
@@ -79,19 +79,6 @@ public class JdbcOrderDaoIntTest {
     @Test
     public void testGetNonexistentOrderById() {
         assertFalse(orderDao.get(-1L).isPresent());
-    }
-
-    @Test
-    public void testGetExistingOrderBySecureId() {
-        Optional<Order> orderFromDb = orderDao.get("secureId2");
-        Order expected = initializeOrderFromDb();
-        assertTrue(orderFromDb.isPresent());
-        TestUtils.assertOrdersEquality(expected, orderFromDb.get());
-    }
-
-    @Test
-    public void testGetNonexistentOrderBySecureId() {
-        assertFalse(orderDao.get("NonexistentSecureId").isPresent());
     }
 
     @Test
@@ -135,13 +122,12 @@ public class JdbcOrderDaoIntTest {
         Order order = new Order();
 
         List<OrderItem> orderItems = new ArrayList<>();
-        orderItems.add(new OrderItem(null, phone1, order, 1L));
+        orderItems.add(new OrderItem(null, phone1, order, 1L, phone1.getPrice()));
         order.setOrderItems(orderItems);
-        orderItems.add(new OrderItem(null, phone2, order, 1L));
+        orderItems.add(new OrderItem(null, phone2, order, 1L, phone2.getPrice()));
 
-        order.setSecureId("SomeSecureId");
         order.setSubtotal(phone1.getPrice().add(phone2.getPrice()));
-        order.setDeliveryPrice(new BigDecimal("5.0"));
+        order.setDeliveryPrice(new BigDecimal("5.00"));
         order.setTotalPrice(order.getSubtotal().add(order.getDeliveryPrice()));
         order.setFirstName("Katsiaryna");
         order.setLastName("Zhukava");
@@ -157,13 +143,12 @@ public class JdbcOrderDaoIntTest {
         Order order = new Order();
 
         List<OrderItem> orderItems = new ArrayList<>();
-        orderItems.add(new OrderItem(null, phone, order, 1L));
+        orderItems.add(new OrderItem(null, phone, order, 1L, phone.getPrice()));
         order.setOrderItems(orderItems);
 
         order.setId(2L);
-        order.setSecureId("secureId2");
-        order.setSubtotal(new BigDecimal("710.0"));
-        order.setDeliveryPrice(new BigDecimal("5.0"));
+        order.setSubtotal(new BigDecimal("710.00"));
+        order.setDeliveryPrice(new BigDecimal("5.00"));
         order.setTotalPrice(order.getSubtotal().add(order.getDeliveryPrice()));
         order.setFirstName("Vasily");
         order.setLastName("Pupkin");

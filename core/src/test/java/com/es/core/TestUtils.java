@@ -50,7 +50,6 @@ public class TestUtils {
 
     public static void assertOrdersEquality(final Order expected, final Order actual) {
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getSecureId(), actual.getSecureId());
         assertEquals(expected.getSubtotal(), actual.getSubtotal());
         assertEquals(expected.getDeliveryPrice(), actual.getDeliveryPrice());
         assertEquals(expected.getTotalPrice(), actual.getTotalPrice());

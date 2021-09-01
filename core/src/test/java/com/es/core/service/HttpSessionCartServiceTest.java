@@ -142,9 +142,10 @@ public class HttpSessionCartServiceTest {
         assertEquals(new BigDecimal(price1 * quantity1 + price2 * quantity2), cartTotalsOutputDto.getTotalCost());
     }
 
+
     @Test
     public void testIsEmptyEmptyCart() {
-        cartService.clearCart();
+        cartService.clearCart(new HashMap<>());
         assertTrue(cartService.isEmpty());
     }
 
@@ -158,8 +159,21 @@ public class HttpSessionCartServiceTest {
     public void testClearCart() {
         initializeCart();
         assertFalse(cartService.isEmpty());
-        cartService.clearCart();
+        cartService.clearCart(cartService.getCart().getItems());
         assertTrue(cartService.isEmpty());
+    }
+
+    @Test
+    public void testClearCartWithItemsAdded() {
+        initializeCart();
+        assertFalse(cartService.isEmpty());
+        Map<Long,Long> cartItems = new HashMap<>(cartService.getCart().getItems());
+
+        cart.getItems().put(phoneId1, quantity1 + 2);
+        cartService.clearCart(cartItems);
+        assertFalse(cartService.isEmpty());
+        assertEquals(1, cartService.getCart().getItems().size());
+        assertEquals(2, cartService.getCart().getItems().get(phoneId1).longValue());
     }
 
     public void initializeData() {

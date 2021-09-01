@@ -56,7 +56,7 @@
                   <form:errors class="message" path="items[${i.index}].requestedQuantity"/>
                 </td>
                 <td>
-                  <button form="deleteCartItemForm" formaction="${pageContext.request.contextPath}/cart/${item.key.id}" type="submit" class="btn btn-primary">
+                  <button form="deleteCartItemForm" formaction="<c:url value="/cart/${item.key.id}"/>" type="submit" class="btn btn-primary">
                     Delete
                   </button>
                 </td>
