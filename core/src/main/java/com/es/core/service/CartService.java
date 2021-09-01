@@ -13,8 +13,8 @@ public interface CartService {
     void update(Map<Long, Long> items) throws OutOfStockException;
     void remove(Long phoneId);
     CartTotalsOutputDto getCartTotalsOutputDto();
-    CartTotalsOutputDto getCartTotalsOutputDto( final Map<Long, Long> cartItems );
-    BigDecimal getTotalCost(final Map<Long, Long> cartItems);
-    void clearCart();
+    CartTotalsOutputDto getCartTotalsOutputDto(Map<Long, Long> cartItems);
+    BigDecimal getTotalCost(Map<Long, Long> cartItems);
+    void clearCart(Map<Long, Long> cartItems);
     boolean isEmpty();
 }

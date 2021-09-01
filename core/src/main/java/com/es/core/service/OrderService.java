@@ -8,5 +8,6 @@ import com.es.core.model.order.Order;
 public interface OrderService {
     Order createOrder(Cart cart);
     Order createOrder(Cart cart, UserInputDto userInputDto);
+    void fillUserInfo(Order order, UserInputDto userInputDto);
     void placeOrder(Order order) throws OutOfStockException;
 }

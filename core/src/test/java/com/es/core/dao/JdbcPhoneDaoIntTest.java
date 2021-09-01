@@ -272,7 +272,7 @@ public class JdbcPhoneDaoIntTest {
         phone.setId(2000L);
         phone.setBrand("Alcatel");
         phone.setModel("Alcatel OT-117");
-        phone.setPrice(new BigDecimal("200.0"));
+        phone.setPrice(new BigDecimal("200.00"));
         phone.setDisplaySizeInches(new BigDecimal("1.3"));
         phone.setWeightGr(null);
         phone.setLengthMm(new BigDecimal("105.0"));

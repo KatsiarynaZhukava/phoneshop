@@ -15,7 +15,7 @@ create table phones (
   id BIGINT AUTO_INCREMENT primary key,
   brand VARCHAR(50) NOT NULL,
   model VARCHAR(254) NOT NULL,
-  price FLOAT,
+  price DECIMAL(10,2),
   displaySizeInches FLOAT,
   weightGr SMALLINT,
   lengthMm FLOAT,
@@ -56,12 +56,11 @@ create table stocks (
   CONSTRAINT FK_stocks_phoneId FOREIGN KEY (phoneId) REFERENCES phones (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
 create table orders (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  secureId VARCHAR(50) NOT NULL,
-  subtotal FLOAT NOT NULL,
-  deliveryPrice FLOAT NOT NULL,
+  subtotal DECIMAL(10,2) NOT NULL,
+  deliveryPrice DECIMAL(5,2) NOT NULL,
+  totalPrice DECIMAL(10,2) NOT NULL,
   firstName VARCHAR(50) NOT NULL,
   lastName VARCHAR(50) NOT NULL,
   deliveryAddress VARCHAR(100) NOT NULL,
@@ -74,6 +73,7 @@ create table phone2order (
   phoneId BIGINT,
   orderId BIGINT,
   quantity INT NOT NULL,
+  purchaseTimePrice DECIMAL(10,2) NOT NULL,
   CONSTRAINT FK_phone2order_phoneId FOREIGN KEY (phoneId) REFERENCES phones(id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT FK_phone2order_orderId FOREIGN KEY (orderId) REFERENCES orders(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -31,13 +32,16 @@ public class OrderExtractor implements ResultSetExtractor<List<Order>> {
         Order order = null;
         List<OrderItem> orderItems = new ArrayList<>();
         Map<Long, Long> phoneQuantities = new HashMap<>();
+        Map<Long, BigDecimal> phonePrices = new HashMap<>();
         while (resultSet.next()) {
             if (order == null) {
                 order = orderBeanPropertyRowMapper.mapRow(resultSet, resultSet.getRow());
                 order.setOrderItems(orderItems);
                 order.setTotalPrice(order.getSubtotal().add(order.getDeliveryPrice()));
             }
-            phoneQuantities.put(resultSet.getLong("phone2order.phoneId"), resultSet.getLong("phone2order.quantity"));
+            Long phoneId = resultSet.getLong("phone2order.phoneId");
+            phoneQuantities.put(phoneId, resultSet.getLong("phone2order.quantity"));
+            phonePrices.put(phoneId, resultSet.getBigDecimal("phone2order.purchaseTimePrice"));
         }
         Map<Long, Phone> phones = phoneDao.findAll(new ArrayList<>(phoneQuantities.keySet()))
                                           .stream()
@@ -46,7 +50,7 @@ public class OrderExtractor implements ResultSetExtractor<List<Order>> {
         for (Long phoneId : phoneQuantities.keySet()) {
             Phone phone = phones.get(phoneId);
             if (phone != null) {
-                orderItems.add(new OrderItem(null, phone, order, phoneQuantities.get(phoneId)));
+                orderItems.add(new OrderItem(null, phone, order, phoneQuantities.get(phoneId), phonePrices.get(phoneId)));
             } else {
                 throw new NotFoundException(PhoneShopMessages.PHONE_NOT_FOUND_BY_ID_MESSAGE, phoneId);
             }

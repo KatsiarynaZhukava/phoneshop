@@ -19,12 +19,11 @@ import java.util.Optional;
 @Component
 public class JdbcOrderDao implements OrderDao {
     private static final String SELECT_ORDER_BY_ID_QUERY = "select * from orders left join phone2order on orders.id = phone2order.orderId where id = ?";
-    private static final String SELECT_ORDER_BY_SECURE_ID_QUERY = "select * from orders left join phone2order on orders.id = phone2order.orderId where secureId = ?";
     private static final String CHECK_ORDER_EXISTS_BY_ID_QUERY = "select 1 from orders where id = ?";
     private static final String DELETE_PHONE2ORDER_QUERY = "delete from phone2order where orderId = ?";
-    private static final String INSERT_INTO_PHONE2ORDER_QUERY = "insert into phone2order (phoneId, orderId, quantity) values (?, ?, ?)";
-    private static final String INSERT_INTO_ORDERS_QUERY = "insert into orders (secureId, subtotal, deliveryPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_ORDERS_QUERY = "update orders set secureId = ?, subtotal = ?, deliveryPrice = ?, firstName = ?, lastName = ?, deliveryAddress = ?, contactPhoneNo = ?, additionalInfo = ?, status = ? where id = ?";
+    private static final String INSERT_INTO_PHONE2ORDER_QUERY = "insert into phone2order (phoneId, orderId, quantity, purchaseTimePrice) values (?, ?, ?, ?)";
+    private static final String INSERT_INTO_ORDERS_QUERY = "insert into orders (subtotal, deliveryPrice, totalPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, status, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_ORDERS_QUERY = "update orders set subtotal = ?, deliveryPrice = ?, totalPrice = ?, firstName = ?, lastName = ?, deliveryAddress = ?, contactPhoneNo = ?, additionalInfo = ?, status = ? where id = ?";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -47,14 +46,8 @@ public class JdbcOrderDao implements OrderDao {
     }
 
     @Override
-    public Optional<Order> get( final String secureId ) {
-        List<Order> orders = jdbcTemplate.query(SELECT_ORDER_BY_SECURE_ID_QUERY, new Object[]{ secureId }, orderExtractor);
-        return orders == null ? Optional.empty() : Optional.of(orders.get(0));
-    }
-
-    @Override
     public void save( final Order order ) {
-        Object[] fields = new Object[] { order.getSecureId(), order.getSubtotal(), order.getDeliveryPrice(),
+        Object[] fields = new Object[] { order.getSubtotal(), order.getDeliveryPrice(), order.getTotalPrice(),
                                          order.getFirstName(), order.getLastName(), order.getDeliveryAddress(),
                                          order.getContactPhoneNo(), order.getAdditionalInfo(), order.getStatus().toString(),
                                          order.getId() };
@@ -85,7 +78,7 @@ public class JdbcOrderDao implements OrderDao {
 
         List<Object[]> batch = new ArrayList<>();
         for (OrderItem orderItem : order.getOrderItems()) {
-            Object[] values = new Object[]{ orderItem.getPhone().getId(), orderItem.getOrder().getId(), orderItem.getQuantity() };
+            Object[] values = new Object[]{ orderItem.getPhone().getId(), orderItem.getOrder().getId(), orderItem.getQuantity(), orderItem.getPurchaseTimePrice() };
             batch.add(values);
         }
         jdbcTemplate.batchUpdate(INSERT_INTO_PHONE2ORDER_QUERY, batch);
