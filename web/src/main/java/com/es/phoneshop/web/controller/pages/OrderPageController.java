@@ -85,8 +85,10 @@ public class OrderPageController {
 
                 return "redirect:/orderOverview/" + orderUUID;
             } catch (OutOfStockException e) {
-                redirectAttributes.addFlashAttribute("orderErrorMessage", "Some items in your cart ran out of stock and got removed");
-                redirectAttributes.addFlashAttribute("userInputDto", userInputDto);
+                if (!cartService.isEmpty()) {
+                    redirectAttributes.addFlashAttribute("orderErrorMessage", "Some items in your cart ran out of stock and got removed");
+                    redirectAttributes.addFlashAttribute("userInputDto", userInputDto);
+                }
                 return "redirect:/order";
             }
         }
