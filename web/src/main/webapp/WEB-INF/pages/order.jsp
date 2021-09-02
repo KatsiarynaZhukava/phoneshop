@@ -38,7 +38,7 @@
             </td>
             <td>${item.phone.displaySizeInches} ″</td>
             <td>${item.quantity}</td>
-            <td>$ ${item.phone.price}</td>
+            <td>$ ${item.purchaseTimePrice}</td>
           </tr>
         </c:forEach>
           <tr>
