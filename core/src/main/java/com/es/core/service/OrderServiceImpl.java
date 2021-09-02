@@ -88,45 +88,51 @@ public class OrderServiceImpl implements OrderService {
         List<Long> phoneIds = order.getOrderItems().stream()
                                                    .map(orderItem -> orderItem.getPhone().getId())
                                                    .collect(Collectors.toList());
-        boolean isUpdateSuccessful = false;
-        while (!isUpdateSuccessful) {
-            Map<Long, Stock> stocks = stockDao.findAll(phoneIds)
-                                              .stream()
-                                              .collect( Collectors.toMap( stock -> stock.getPhone().getId(),
-                                                                          Function.identity() ));
-            Map<Long, OutOfStockItem> outOfStockItems = new HashMap<>();
-
-            for (OrderItem orderItem : order.getOrderItems()) {
-                Long phoneId = orderItem.getPhone().getId();
-                Long stockRequested = orderItem.getQuantity();
-
-                if (stocks.containsKey(phoneId)) {
-                    Long stockAvailable = stocks.get(phoneId).getStock();
-                    if (stockAvailable < stockRequested) {
-                        outOfStockItems.put(phoneId, new OutOfStockItem(phoneId, stockRequested, stockAvailable));
-                    }
-                } else {
-                    outOfStockItems.put(phoneId, new OutOfStockItem(phoneId, stockRequested, 0L));
-                }
-            }
-            if (outOfStockItems.isEmpty()) {
-                Map<Long, Long> requestedStocks = order.getOrderItems()
-                                                       .stream()
-                                                       .collect( Collectors.toMap( orderItem -> orderItem.getPhone().getId(),
-                                                                                   OrderItem::getQuantity));
-                orderDao.save(order);
-                try {
-                    stockDao.update(requestedStocks);
-                    isUpdateSuccessful = true;
-                } catch (DataIntegrityViolationException e) {
-
-                }
-            } else {
-                for (OutOfStockItem outOfStockItem : outOfStockItems.values()) {
-                    cartService.remove(outOfStockItem.getPhoneId());
-                }
+        Map<Long, OutOfStockItem> outOfStockItems = getOutOfStockItems(order, phoneIds);
+        if (outOfStockItems.isEmpty()) {
+            Map<Long, Long> requestedStocks = order.getOrderItems()
+                                                   .stream()
+                                                   .collect( Collectors.toMap( orderItem -> orderItem.getPhone().getId(),
+                                                                               OrderItem::getQuantity ));
+            orderDao.save(order);
+            try {
+                stockDao.update(requestedStocks);
+            } catch (DataIntegrityViolationException e) {
+                outOfStockItems = getOutOfStockItems(order, phoneIds);
+                removeOutOfStockItemsFromCart(outOfStockItems);
                 throw new OutOfStockException(new ArrayList<>(outOfStockItems.values()));
             }
+        } else {
+            removeOutOfStockItemsFromCart(outOfStockItems);
+            throw new OutOfStockException(new ArrayList<>(outOfStockItems.values()));
+        }
+    }
+
+    private Map<Long, OutOfStockItem> getOutOfStockItems( final Order order, final List<Long> phoneIds ) {
+        Map<Long, Stock> stocks = stockDao.findAll(phoneIds)
+                                          .stream()
+                                          .collect( Collectors.toMap( stock -> stock.getPhone().getId(),
+                                                                      Function.identity() ));
+        Map<Long, OutOfStockItem> outOfStockItems = new HashMap<>();
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Long phoneId = orderItem.getPhone().getId();
+            Long stockRequested = orderItem.getQuantity();
+
+            if (stocks.containsKey(phoneId)) {
+                Long stockAvailable = stocks.get(phoneId).getStock();
+                if (stockAvailable < stockRequested) {
+                    outOfStockItems.put(phoneId, new OutOfStockItem(phoneId, stockRequested, stockAvailable));
+                }
+            } else {
+                outOfStockItems.put(phoneId, new OutOfStockItem(phoneId, stockRequested, 0L));
+            }
+        }
+        return outOfStockItems;
+    }
+
+    private void removeOutOfStockItemsFromCart( final Map<Long, OutOfStockItem> outOfStockItems ) {
+        for (OutOfStockItem outOfStockItem : outOfStockItems.values()) {
+            cartService.remove(outOfStockItem.getPhoneId());
         }
     }
 }
