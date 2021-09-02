@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Controller
@@ -78,7 +79,7 @@ public class OrderPageController {
 
                 String orderUUID = UUID.randomUUID().toString();
                 Map<String, Order> ordersWithUUIDsMap = (Map<String, Order>) httpSession.getAttribute("orders");
-                if (ordersWithUUIDsMap == null) ordersWithUUIDsMap = new HashMap<>();
+                if (ordersWithUUIDsMap == null) ordersWithUUIDsMap = new ConcurrentHashMap<>();
                 ordersWithUUIDsMap.put(orderUUID, order);
                 httpSession.setAttribute("orders", ordersWithUUIDsMap);
 

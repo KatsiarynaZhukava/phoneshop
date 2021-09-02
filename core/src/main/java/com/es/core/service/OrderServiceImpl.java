@@ -55,7 +55,9 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         order.setOrderItems(orderItems);
-        order.setSubtotal(cartService.getTotalCost(cartItems));
+        order.setSubtotal(orderItems.stream()
+                                    .map(orderItem -> new BigDecimal(orderItem.getQuantity()).multiply(orderItem.getPurchaseTimePrice()))
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add));
         order.setDeliveryPrice(deliveryPrice);
         order.setTotalPrice(order.getSubtotal().add(order.getDeliveryPrice()));
         order.setStatus(OrderStatus.NEW);
