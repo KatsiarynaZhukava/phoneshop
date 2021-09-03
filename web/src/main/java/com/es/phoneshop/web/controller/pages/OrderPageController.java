@@ -37,7 +37,7 @@ public class OrderPageController {
     public String getOrder( final Model model,
                             final HttpServletResponse response,
                             final HttpSession httpSession ) {
-        if (cartService.isEmpty()) return "redirect:/productList";
+        if (cartService.isEmpty())  return "redirect:/productList";
 
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         Order order = orderService.createOrder(cartService.getCart());
@@ -88,6 +88,9 @@ public class OrderPageController {
                 if (!cartService.isEmpty()) {
                     redirectAttributes.addFlashAttribute("orderErrorMessage", "Some items in your cart ran out of stock and got removed");
                     redirectAttributes.addFlashAttribute("userInputDto", userInputDto);
+                } else {
+                    redirectAttributes.addFlashAttribute("orderErrorMessage", "All items in your cart ran out of stock and got removed");
+                    return "redirect:/productList";
                 }
                 return "redirect:/order";
             }

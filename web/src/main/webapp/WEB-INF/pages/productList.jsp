@@ -8,7 +8,9 @@
     <div class="float-left">
       <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
     </div>
-
+    <div>
+      <h4 class="message">${orderErrorMessage}</h4>
+    </div>
     <div class="float-right">
       <form action = "${pageContext.request.contextPath}/productList">
         <div class="row">
