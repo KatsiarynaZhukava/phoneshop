@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -60,6 +61,7 @@ public class OrderServiceImpl implements OrderService {
                                     .reduce(BigDecimal.ZERO, BigDecimal::add));
         order.setDeliveryPrice(deliveryPrice);
         order.setTotalPrice(order.getSubtotal().add(order.getDeliveryPrice()));
+        order.setDate(LocalDateTime.now());
         order.setStatus(OrderStatus.NEW);
         return order;
     }
@@ -96,7 +98,7 @@ public class OrderServiceImpl implements OrderService {
                                                                                OrderItem::getQuantity ));
             orderDao.save(order);
             try {
-                stockDao.update(requestedStocks);
+                stockDao.increaseReserved(requestedStocks);
             } catch (DataIntegrityViolationException e) {
                 outOfStockItems = getOutOfStockItems(order, phoneIds);
                 removeOutOfStockItemsFromCart(outOfStockItems);
@@ -108,18 +110,36 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    @Transactional
+    public void changeOrderStatus( final Order order, final OrderStatus orderStatus ) {
+        Map<Long, Long> requestedStocks = order.getOrderItems()
+                                               .stream()
+                                               .collect( Collectors.toMap( orderItem -> orderItem.getPhone().getId(),
+                                                                           OrderItem::getQuantity ));
+        if (orderStatus.equals(OrderStatus.REJECTED)) {
+            stockDao.decreaseReserved(requestedStocks);
+        } else if (orderStatus.equals(OrderStatus.DELIVERED)) {
+            stockDao.decreaseReserved(requestedStocks);
+            stockDao.decreaseStock(requestedStocks);
+        }
+        order.setStatus(orderStatus);
+        orderDao.save(order);
+    }
+
     private Map<Long, OutOfStockItem> getOutOfStockItems( final Order order, final List<Long> phoneIds ) {
         Map<Long, Stock> stocks = stockDao.findAll(phoneIds)
                                           .stream()
-                                          .collect( Collectors.toMap( stock -> stock.getPhone().getId(),
-                                                                      Function.identity() ));
+                                          .collect(Collectors.toMap(stock -> stock.getPhone().getId(),
+                                                                    Function.identity()));
         Map<Long, OutOfStockItem> outOfStockItems = new HashMap<>();
         for (OrderItem orderItem : order.getOrderItems()) {
             Long phoneId = orderItem.getPhone().getId();
             Long stockRequested = orderItem.getQuantity();
 
             if (stocks.containsKey(phoneId)) {
-                Long stockAvailable = stocks.get(phoneId).getStock();
+                Stock stock = stocks.get(phoneId);
+                Long stockAvailable = stock.getStock() - stock.getReserved();
                 if (stockAvailable < stockRequested) {
                     outOfStockItems.put(phoneId, new OutOfStockItem(phoneId, stockRequested, stockAvailable));
                 }

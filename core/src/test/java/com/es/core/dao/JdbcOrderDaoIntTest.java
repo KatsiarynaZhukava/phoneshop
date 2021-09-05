@@ -15,12 +15,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:context/applicationContext-core-test.xml")
@@ -82,6 +82,17 @@ public class JdbcOrderDaoIntTest {
     }
 
     @Test
+    public void testFindAll() {
+        List<Order> ordersFromDb = orderDao.findAll();
+        List<Order> orders = initializeOrdersFromDb();
+
+        assertEquals(2, ordersFromDb.size());
+        for (int i = 0; i < 2; i++) {
+            TestUtils.assertOrdersEquality(orders.get(i), ordersFromDb.get(i));
+        }
+    }
+
+    @Test
     public void testSaveOrderWithoutId() {
         Order order = initializeOrder();
         orderDao.save(order);
@@ -134,6 +145,7 @@ public class JdbcOrderDaoIntTest {
         order.setDeliveryAddress("Minsk");
         order.setContactPhoneNo("3333333");
         order.setAdditionalInfo("Some additional info");
+        order.setDate(LocalDateTime.now());
         order.setStatus(OrderStatus.NEW);
         return order;
     }
@@ -157,5 +169,32 @@ public class JdbcOrderDaoIntTest {
         order.setAdditionalInfo("");
         order.setStatus(OrderStatus.NEW);
         return order;
+    }
+
+    private List<Order> initializeOrdersFromDb() {
+        Phone phone1 = phoneDao.get(2001L).get();
+        Phone phone2 = phoneDao.get(2000L).get();
+        Order order = new Order();
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        orderItems.add(new OrderItem(null, phone1, order, 2L, new BigDecimal(200.0)));
+        orderItems.add(new OrderItem(null, phone2, order, 1L, new BigDecimal(240.0)));
+        order.setOrderItems(orderItems);
+
+        order.setId(1L);
+        order.setSubtotal(new BigDecimal("680.00"));
+        order.setDeliveryPrice(new BigDecimal("5.00"));
+        order.setTotalPrice(order.getSubtotal().add(order.getDeliveryPrice()));
+        order.setFirstName("Vasily");
+        order.setLastName("Pupkin");
+        order.setDeliveryAddress("Nezaleznosci av. 1-1");
+        order.setContactPhoneNo("+375331234567");
+        order.setAdditionalInfo("");
+        order.setStatus(OrderStatus.NEW);
+
+        List<Order> orders = new ArrayList<>();
+        orders.add(order);
+        orders.add(initializeOrderFromDb());
+        return orders;
     }
 }

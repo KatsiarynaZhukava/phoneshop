@@ -9,5 +9,7 @@ import java.util.Optional;
 public interface StockDao {
     Optional<Stock> get(Long phoneId);
     List<Stock> findAll(List<Long> phoneIds);
-    void update(Map<Long, Long> requestedStocks);
+    void increaseReserved(Map<Long, Long> requestedStocks);
+    void decreaseReserved(Map<Long, Long> requestedStocks);
+    void decreaseStock(Map<Long, Long> requestedStocks);
 }

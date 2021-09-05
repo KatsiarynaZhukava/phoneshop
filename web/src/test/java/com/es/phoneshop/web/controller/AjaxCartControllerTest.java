@@ -5,7 +5,7 @@ import com.es.core.exception.OutOfStockException;
 import com.es.core.model.cart.Cart;
 import com.es.core.service.CartService;
 import com.es.phoneshop.web.exception.InvalidInputException;
-import com.es.phoneshop.web.exceptionHandlers.InvalidInputControllerAdvice;
+import com.es.phoneshop.web.exceptionHandlers.GlobalDefaultExceptionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +41,7 @@ public class AjaxCartControllerTest {
     @Before
     public void init() {
         mockMvc = MockMvcBuilders.standaloneSetup(ajaxCartController)
-                .setControllerAdvice(new InvalidInputControllerAdvice())
+                .setControllerAdvice(new GlobalDefaultExceptionHandler())
                 .build();
     }
 
