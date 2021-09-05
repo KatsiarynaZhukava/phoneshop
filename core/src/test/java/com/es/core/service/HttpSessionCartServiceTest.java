@@ -31,6 +31,7 @@ public class HttpSessionCartServiceTest {
 
     private final Long phoneId1 = 2000L, phoneId2 = 2001L;
     private final Long stock1 = 10L, stock2 = 1L;
+    private final Long reserved1 = 4L, reserved2 = 0L;
     private final Long price1 = 300L, price2 = 500L;
     private final Long quantity1 = 2L, quantity2 = 1L;
     private Phone phone, anotherPhone;
@@ -184,6 +185,7 @@ public class HttpSessionCartServiceTest {
         Stock stock = new Stock();
         stock.setPhone(phone);
         stock.setStock(stock1);
+        stock.setReserved(reserved1);
         when(stockDao.get(phoneId1)).thenReturn(Optional.of(stock));
 
         anotherPhone = new Phone();
@@ -193,6 +195,7 @@ public class HttpSessionCartServiceTest {
         Stock anotherStock = new Stock();
         anotherStock.setPhone(anotherPhone);
         anotherStock.setStock(stock2);
+        anotherStock.setReserved(reserved2);
         when(stockDao.get(phoneId2)).thenReturn(Optional.of(anotherStock));
 
         when(phoneDao.findAll(Collections.singletonList(phoneId1))).thenReturn(Collections.singletonList(phone));

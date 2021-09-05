@@ -51,9 +51,10 @@ create table phone2color (
 create table stocks (
   phoneId BIGINT NOT NULL,
   stock SMALLINT NOT NULL CHECK (stock >= 0),
-  reserved SMALLINT NOT NULL,
+  reserved SMALLINT NOT NULL CHECK (reserved >= 0),
   UNIQUE (phoneId),
-  CONSTRAINT FK_stocks_phoneId FOREIGN KEY (phoneId) REFERENCES phones (id) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT FK_stocks_phoneId FOREIGN KEY (phoneId) REFERENCES phones (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT CHK_reserved_less_than_or_equals_stock CHECK (reserved <= stock)
 );
 
 create table orders (
@@ -66,6 +67,7 @@ create table orders (
   deliveryAddress VARCHAR(100) NOT NULL,
   contactPhoneNo VARCHAR(50) NOT NULL,
   additionalInfo VARCHAR(200) NOT NULL,
+  date TIMESTAMP,
   status ENUM('NEW', 'DELIVERED', 'REJECTED') NOT NULL
 );
 

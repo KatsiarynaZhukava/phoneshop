@@ -14,7 +14,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 
 @ControllerAdvice
-public class InvalidInputControllerAdvice {
+public class GlobalDefaultExceptionHandler {
 
     @ExceptionHandler( InvalidInputException.class )
     public ResponseEntity<Error> handleException( InvalidInputException e ) {

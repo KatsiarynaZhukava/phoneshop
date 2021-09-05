@@ -50,7 +50,7 @@ public class OrderPageController {
     }
 
     @PostMapping
-    public String placeOrder( @ModelAttribute("userInputDto") @Valid UserInputDto userInputDto,
+    public String placeOrder( final @ModelAttribute("userInputDto") @Valid UserInputDto userInputDto,
                               final BindingResult bindingResult,
                               final RedirectAttributes redirectAttributes,
                               final HttpSession httpSession ) {

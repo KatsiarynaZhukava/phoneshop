@@ -1,6 +1,7 @@
 package com.es.core.model.order;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Order {
@@ -17,33 +18,10 @@ public class Order {
     private String contactPhoneNo;
     private String additionalInfo;
 
+    private LocalDateTime date;
     private OrderStatus status;
 
     public Order() { }
-
-    public Order( final Long id,
-                  final List<OrderItem> orderItems,
-                  final BigDecimal subtotal,
-                  final BigDecimal deliveryPrice,
-                  final BigDecimal totalPrice,
-                  final String firstName,
-                  final String lastName,
-                  final String deliveryAddress,
-                  final String contactPhoneNo,
-                  final String additionalInfo,
-                  final OrderStatus status ) {
-        this.id = id;
-        this.orderItems = orderItems;
-        this.subtotal = subtotal;
-        this.deliveryPrice = deliveryPrice;
-        this.totalPrice = totalPrice;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.deliveryAddress = deliveryAddress;
-        this.contactPhoneNo = contactPhoneNo;
-        this.additionalInfo = additionalInfo;
-        this.status = status;
-    }
 
     public Long getId() {
         return id;
@@ -118,6 +96,10 @@ public class Order {
     public String getAdditionalInfo() { return additionalInfo; }
 
     public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
+
+    public LocalDateTime getDate() { return date; }
+
+    public void setDate(LocalDateTime date) { this.date = date; }
 
     public OrderStatus getStatus() {
         return status;

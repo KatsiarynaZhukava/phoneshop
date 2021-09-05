@@ -16,7 +16,9 @@ import java.util.Optional;
 public class JdbcStockDao implements StockDao {
     private static final String SELECT_STOCK_BY_PHONE_ID_QUERY = "select * from stocks where phoneId = ?";
     private static final String SELECT_STOCKS_BY_PHONE_IDS_PART = "select * from stocks where phoneId in (";
-    private static final String UPDATE_STOCKS_QUERY = "update stocks set stock = stock - ? where phoneId = ?";
+    private static final String UPDATE_INCREASE_RESERVED_QUERY = "update stocks set reserved = reserved + ? where phoneId = ?";
+    private static final String UPDATE_DECREASE_RESERVED_QUERY = "update stocks set reserved = reserved - ? where phoneId = ?";
+    private static final String DECREASE_STOCK_QUERY = "update stocks set stock = stock - ? where phoneId = ?";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -43,12 +45,26 @@ public class JdbcStockDao implements StockDao {
     }
 
     @Override
-    public void update( final Map<Long, Long> requestedStocks ) {
+    public void increaseReserved( final Map<Long, Long> requestedStocks ) {
+        jdbcTemplate.batchUpdate(UPDATE_INCREASE_RESERVED_QUERY, getStocksBatch(requestedStocks));
+    }
+
+    @Override
+    public void decreaseReserved( final Map<Long, Long> requestedStocks ) {
+        jdbcTemplate.batchUpdate(UPDATE_DECREASE_RESERVED_QUERY, getStocksBatch(requestedStocks));
+    }
+
+    @Override
+    public void decreaseStock( final Map<Long, Long> requestedStocks ) {
+        jdbcTemplate.batchUpdate(DECREASE_STOCK_QUERY, getStocksBatch(requestedStocks));
+    }
+
+    private List<Object[]> getStocksBatch( final Map<Long, Long> requestedStocks ) {
         List<Object[]> batch = new ArrayList<>();
         for (Map.Entry<Long, Long> phoneStock : requestedStocks.entrySet()) {
             Object[] values = new Object[]{ phoneStock.getValue(), phoneStock.getKey() };
             batch.add(values);
         }
-        jdbcTemplate.batchUpdate(UPDATE_STOCKS_QUERY, batch);
+        return batch;
     }
 }

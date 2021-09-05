@@ -41,15 +41,16 @@ public class HttpSessionCartService implements CartService {
 
     @Override
     public void addPhone( final Long phoneId, final Long requestedQuantity ) throws OutOfStockException {
-        Long stock = stockDao.get(phoneId)
-                             .orElse(new Stock(null, 0L, 0L))
-                             .getStock();
+        Stock stock = stockDao.get(phoneId)
+                              .orElse(new Stock(null, 0L, 0L));
+        long availableStock = stock.getStock() - stock.getReserved();
+
         lock.lock();
         try {
             Map<Long, Long> cartItems = cart.getItems();
             long quantityOfItemsInCart = cartItems.getOrDefault(phoneId, 0L);
-            if (stock < (quantityOfItemsInCart + requestedQuantity)) {
-                throw new OutOfStockException(phoneId, quantityOfItemsInCart + requestedQuantity, stock);
+            if (availableStock < (quantityOfItemsInCart + requestedQuantity)) {
+                throw new OutOfStockException(phoneId, quantityOfItemsInCart + requestedQuantity, availableStock);
             }
             cartItems.put(phoneId, requestedQuantity + quantityOfItemsInCart);
         } finally {
@@ -71,7 +72,8 @@ public class HttpSessionCartService implements CartService {
                 Long stockRequested = item.getValue();
 
                 if (stocks.containsKey(itemKey)) {
-                    Long stockAvailable = stocks.get(itemKey).getStock();
+                    Stock stock = stocks.get(itemKey);
+                    Long stockAvailable = stock.getStock() - stock.getReserved();
                     if (stockAvailable < stockRequested) {
                         outOfStockItems.add(new OutOfStockItem(itemKey, stockRequested, stockAvailable));
                     }

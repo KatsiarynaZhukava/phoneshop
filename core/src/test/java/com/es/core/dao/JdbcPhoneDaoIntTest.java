@@ -148,7 +148,7 @@ public class JdbcPhoneDaoIntTest {
 
     @Test
     public void testFindAll() {
-        assertEquals(phoneDao.findAll(0, Integer.MAX_VALUE).size(), NUMBER_OF_PHONES_IN_TEST_DB);
+        assertEquals(phoneDao.findAll(0, Integer.MAX_VALUE).size(), NUMBER_OF_PHONES_IN_TEST_DB - 1);
     }
 
     @Test(expected = IllegalArgumentException.class)

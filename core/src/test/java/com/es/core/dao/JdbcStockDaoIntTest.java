@@ -92,21 +92,59 @@ public class JdbcStockDaoIntTest {
     }
 
     @Test
-    public void testUpdateStocks() {
+    public void testIncreaseReserved() {
         Map<Long, Long> requestedStocks = new HashMap<>();
         requestedStocks.put(2000L, 3L);
         requestedStocks.put(2001L, 2L);
-        stockDao.update(requestedStocks);
+        stockDao.increaseReserved(requestedStocks);
+        List<Stock> stocks = stockDao.findAll(new ArrayList<>(requestedStocks.keySet()));
+        assertEquals(3L, stocks.get(0).getReserved().longValue());
+        assertEquals(7L + 2L, stocks.get(1).getReserved().longValue());
+    }
+
+    @Test(expected = DataIntegrityViolationException.class)
+    public void testIncreaseReservedGreaterThanStock() {
+        Map<Long, Long> requestedStocks = new HashMap<>();
+        requestedStocks.put(2000L, 42L);
+        requestedStocks.put(2001L, 2L);
+        stockDao.increaseReserved(requestedStocks);
+    }
+
+    @Test
+    public void testDecreaseReserved() {
+        Map<Long, Long> requestedStocks = new HashMap<>();
+        requestedStocks.put(2001L, 1L);
+        requestedStocks.put(2002L, 2L);
+        stockDao.decreaseReserved(requestedStocks);
+        List<Stock> stocks = stockDao.findAll(new ArrayList<>(requestedStocks.keySet()));
+        assertEquals(7L - 1L, stocks.get(0).getReserved().longValue());
+        assertEquals(6L - 2L, stocks.get(1).getReserved().longValue());
+    }
+
+    @Test(expected = DataIntegrityViolationException.class)
+    public void testDecreaseReservedLessTanZero() {
+        Map<Long, Long> requestedStocks = new HashMap<>();
+        requestedStocks.put(2000L, 42L);
+        requestedStocks.put(2001L, 2L);
+        stockDao.decreaseReserved(requestedStocks);
+    }
+
+    @Test
+    public void testDecreaseStocks() {
+        Map<Long, Long> requestedStocks = new HashMap<>();
+        requestedStocks.put(2000L, 3L);
+        requestedStocks.put(2001L, 2L);
+        stockDao.decreaseStock(requestedStocks);
         List<Stock> stocks = stockDao.findAll(new ArrayList<>(requestedStocks.keySet()));
         assertEquals(10L - 3L, stocks.get(0).getStock().longValue());
         assertEquals(9L - 2L, stocks.get(1).getStock().longValue());
     }
 
     @Test(expected = DataIntegrityViolationException.class)
-    public void testUpdateStocksStockExceeded() {
+    public void testDecreaseStocksLessTanZero() {
         Map<Long, Long> requestedStocks = new HashMap<>();
         requestedStocks.put(2000L, 42L);
         requestedStocks.put(2001L, 2L);
-        stockDao.update(requestedStocks);
+        stockDao.decreaseStock(requestedStocks);
     }
 }
