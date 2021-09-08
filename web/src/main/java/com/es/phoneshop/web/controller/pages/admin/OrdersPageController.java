@@ -19,7 +19,7 @@ public class OrdersPageController {
     @GetMapping
     public String getOrders( final Model model ) {
         List<Order> orders = orderDao.findAll();
-        model.addAttribute("orders", orders);
+        model.addAttribute("adminOrders", orders);
         return "admin/orders";
     }
 }

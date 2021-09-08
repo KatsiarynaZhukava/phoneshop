@@ -1,6 +1,10 @@
 package com.es.core.model.phone;
 
-public class Color {
+import java.io.Serializable;
+
+public class Color implements Serializable {
+    private static final long serialVersionUID = -1624488028942702059L;
+
     private Long id;
     private String code;
 

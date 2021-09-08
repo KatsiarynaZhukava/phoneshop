@@ -1,11 +1,14 @@
 package com.es.core.model.phone;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Phone {
+public class Phone implements Serializable {
+    private static final long serialVersionUID = 4990668112292818574L;
+
     private Long id;
     private String brand;
     private String model;

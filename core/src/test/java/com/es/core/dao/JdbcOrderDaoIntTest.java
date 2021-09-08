@@ -127,15 +127,29 @@ public class JdbcOrderDaoIntTest {
     @Test
     public void testCheckNonexistentOrderExistence() { assertFalse(orderDao.exists(-1L)); }
 
+    @Test
+    public void testUpdateStatus() {
+        Order order = orderDao.get(1L).get();
+        assertEquals(OrderStatus.NEW, order.getStatus());
+
+        orderDao.updateStatus(order.getId(), OrderStatus.DELIVERED);
+        order = orderDao.get(1L).get();
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
+
+        orderDao.updateStatus(order.getId(), OrderStatus.REJECTED);
+        order = orderDao.get(1L).get();
+        assertEquals(OrderStatus.REJECTED, order.getStatus());
+    }
+
     private Order initializeOrder() {
         Phone phone1 = phoneDao.get(2002L).get();
         Phone phone2 = phoneDao.get(2003L).get();
         Order order = new Order();
 
         List<OrderItem> orderItems = new ArrayList<>();
-        orderItems.add(new OrderItem(null, phone1, order, 1L, phone1.getPrice()));
+        orderItems.add(new OrderItem(phone1, order, 1L, phone1.getPrice()));
         order.setOrderItems(orderItems);
-        orderItems.add(new OrderItem(null, phone2, order, 1L, phone2.getPrice()));
+        orderItems.add(new OrderItem(phone2, order, 1L, phone2.getPrice()));
 
         order.setSubtotal(phone1.getPrice().add(phone2.getPrice()));
         order.setDeliveryPrice(new BigDecimal("5.00"));
@@ -155,7 +169,7 @@ public class JdbcOrderDaoIntTest {
         Order order = new Order();
 
         List<OrderItem> orderItems = new ArrayList<>();
-        orderItems.add(new OrderItem(null, phone, order, 1L, phone.getPrice()));
+        orderItems.add(new OrderItem(phone, order, 1L, phone.getPrice()));
         order.setOrderItems(orderItems);
 
         order.setId(2L);
@@ -177,8 +191,8 @@ public class JdbcOrderDaoIntTest {
         Order order = new Order();
 
         List<OrderItem> orderItems = new ArrayList<>();
-        orderItems.add(new OrderItem(null, phone1, order, 2L, new BigDecimal(200.0)));
-        orderItems.add(new OrderItem(null, phone2, order, 1L, new BigDecimal(240.0)));
+        orderItems.add(new OrderItem(phone1, order, 2L, new BigDecimal(200.0)));
+        orderItems.add(new OrderItem(phone2, order, 1L, new BigDecimal(240.0)));
         order.setOrderItems(orderItems);
 
         order.setId(1L);

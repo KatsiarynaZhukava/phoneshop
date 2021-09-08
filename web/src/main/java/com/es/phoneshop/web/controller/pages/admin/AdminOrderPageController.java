@@ -9,6 +9,7 @@ import com.es.core.util.PhoneShopMessages;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.text.MessageFormat;
@@ -32,10 +33,15 @@ public class AdminOrderPageController {
 
     @PostMapping
     public String changeOrderStatus( final @PathVariable Long orderId,
-                                     final @RequestParam OrderStatus orderStatus ) {
+                                     final @RequestParam OrderStatus orderStatus,
+                                     final RedirectAttributes redirectAttributes ) {
         Order order = orderDao.get(orderId)
                               .orElseThrow( NotFoundException.supplier( MessageFormat.format( PhoneShopMessages.ORDER_NOT_FOUND_BY_ID, orderId )));
-        orderService.changeOrderStatus(order, orderStatus);
+        if (order.getStatus() == OrderStatus.NEW) {
+            orderService.changeOrderStatus(order, orderStatus);
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Further status changes are forbidden");
+        }
         return "redirect:/admin/orders/" + orderId;
     }
 }
