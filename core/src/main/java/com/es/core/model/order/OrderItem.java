@@ -2,10 +2,12 @@ package com.es.core.model.order;
 
 import com.es.core.model.phone.Phone;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class OrderItem {
-    private Long id;
+public class OrderItem implements Serializable {
+    private static final long serialVersionUID = 4071177619081746708L;
+
     private Phone phone;
     private Order order;
     private Long quantity;
@@ -13,12 +15,10 @@ public class OrderItem {
 
     public OrderItem() { }
 
-    public OrderItem( final Long id,
-                      final Phone phone,
+    public OrderItem( final Phone phone,
                       final Order order,
                       final Long quantity,
                       final BigDecimal purchaseTimePrice ) {
-        this.id = id;
         this.phone = phone;
         this.order = order;
         this.quantity = quantity;

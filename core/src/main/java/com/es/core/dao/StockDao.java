@@ -11,5 +11,5 @@ public interface StockDao {
     List<Stock> findAll(List<Long> phoneIds);
     void increaseReserved(Map<Long, Long> requestedStocks);
     void decreaseReserved(Map<Long, Long> requestedStocks);
-    void decreaseStock(Map<Long, Long> requestedStocks);
+    void decreaseReservedAndStock(Map<Long, Long> requestedStocks);
 }

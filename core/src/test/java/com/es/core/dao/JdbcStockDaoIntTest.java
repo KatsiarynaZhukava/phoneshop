@@ -130,21 +130,23 @@ public class JdbcStockDaoIntTest {
     }
 
     @Test
-    public void testDecreaseStocks() {
+    public void testDecreaseReservedAndStock() {
         Map<Long, Long> requestedStocks = new HashMap<>();
-        requestedStocks.put(2000L, 3L);
         requestedStocks.put(2001L, 2L);
-        stockDao.decreaseStock(requestedStocks);
+        requestedStocks.put(2002L, 3L);
+        stockDao.decreaseReservedAndStock(requestedStocks);
         List<Stock> stocks = stockDao.findAll(new ArrayList<>(requestedStocks.keySet()));
-        assertEquals(10L - 3L, stocks.get(0).getStock().longValue());
-        assertEquals(9L - 2L, stocks.get(1).getStock().longValue());
+        assertEquals(9L - 2L, stocks.get(0).getStock().longValue());
+        assertEquals(28L - 3L, stocks.get(1).getStock().longValue());
+        assertEquals(7L - 2L, stocks.get(0).getReserved().longValue());
+        assertEquals(6L - 3L, stocks.get(1).getReserved().longValue());
     }
 
     @Test(expected = DataIntegrityViolationException.class)
-    public void testDecreaseStocksLessTanZero() {
+    public void testDecreaseReservedAndStockLessTanZero() {
         Map<Long, Long> requestedStocks = new HashMap<>();
         requestedStocks.put(2000L, 42L);
         requestedStocks.put(2001L, 2L);
-        stockDao.decreaseStock(requestedStocks);
+        stockDao.decreaseReservedAndStock(requestedStocks);
     }
 }

@@ -50,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
         for(Map.Entry<Long, Long> cartItem: cartItems.entrySet()) {
             Phone phone = phones.get(cartItem.getKey());
             if (phone != null) {
-                orderItems.add(new OrderItem(null, phone, order, cartItem.getValue(), phone.getPrice()));
+                orderItems.add(new OrderItem(phone, order, cartItem.getValue(), phone.getPrice()));
             } else {
                 throw new NotFoundException(PhoneShopMessages.PHONE_NOT_FOUND_BY_ID_MESSAGE, cartItem.getKey());
             }
@@ -120,11 +120,10 @@ public class OrderServiceImpl implements OrderService {
         if (orderStatus.equals(OrderStatus.REJECTED)) {
             stockDao.decreaseReserved(requestedStocks);
         } else if (orderStatus.equals(OrderStatus.DELIVERED)) {
-            stockDao.decreaseReserved(requestedStocks);
-            stockDao.decreaseStock(requestedStocks);
+            stockDao.decreaseReservedAndStock(requestedStocks);
         }
         order.setStatus(orderStatus);
-        orderDao.save(order);
+        orderDao.updateStatus(order.getId(), orderStatus);
     }
 
     private Map<Long, OutOfStockItem> getOutOfStockItems( final Order order, final List<Long> phoneIds ) {

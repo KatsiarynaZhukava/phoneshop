@@ -2,6 +2,7 @@ package com.es.core.dao;
 
 import com.es.core.model.order.Order;
 import com.es.core.model.order.OrderItem;
+import com.es.core.model.order.OrderStatus;
 import com.es.core.util.OrderExtractor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -23,6 +24,7 @@ public class JdbcOrderDao implements OrderDao {
     private static final String INSERT_INTO_PHONE2ORDER_QUERY = "insert into phone2order (phoneId, orderId, quantity, purchaseTimePrice) values (?, ?, ?, ?)";
     private static final String INSERT_INTO_ORDERS_QUERY = "insert into orders (subtotal, deliveryPrice, totalPrice, firstName, lastName, deliveryAddress, contactPhoneNo, additionalInfo, date, status, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_ORDERS_QUERY = "update orders set subtotal = ?, deliveryPrice = ?, totalPrice = ?, firstName = ?, lastName = ?, deliveryAddress = ?, contactPhoneNo = ?, additionalInfo = ?, date = ?, status = ? where id = ?";
+    private static final String UPDATE_STATUS_QUERY = "update orders set status = ? where id = ?";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -92,5 +94,10 @@ public class JdbcOrderDao implements OrderDao {
     public boolean exists( long id ) {
         return !jdbcTemplate.query(CHECK_ORDER_EXISTS_BY_ID_QUERY, new Object[]{ id }, longSingleColumnRowMapper)
                 .isEmpty();
+    }
+
+    @Override
+    public void updateStatus(long id, OrderStatus orderStatus) {
+        jdbcTemplate.update(UPDATE_STATUS_QUERY, orderStatus.toString(), id);
     }
 }

@@ -19,7 +19,7 @@
       </tr>
       </thead>
       <tbody>
-        <c:forEach var="order" items="${orders}">
+        <c:forEach var="order" items="${adminOrders}">
           <tr>
             <td><a href="<c:url value="/admin/orders/${order.id}"/>">${order.id}</a></td>
             <td>${order.firstName} ${order.lastName}</td>

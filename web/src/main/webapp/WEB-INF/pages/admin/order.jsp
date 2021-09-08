@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="<c:url value="/resources/styles/adminOrder.css"/>">
   <div class="header-container">
     <h5>Order number: ${order.id}</h5>
+    <p class="errorMessage">${errorMessage}</p>
     <h5>Order status: ${order.status}</h5>
   </div>
 
