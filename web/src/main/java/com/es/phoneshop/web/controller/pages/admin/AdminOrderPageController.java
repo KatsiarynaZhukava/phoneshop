@@ -6,10 +6,11 @@ import com.es.core.model.order.Order;
 import com.es.core.model.order.OrderStatus;
 import com.es.core.service.OrderService;
 import com.es.core.util.PhoneShopMessages;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.text.MessageFormat;
@@ -32,16 +33,20 @@ public class AdminOrderPageController {
     }
 
     @PostMapping
-    public String changeOrderStatus( final @PathVariable Long orderId,
-                                     final @RequestParam OrderStatus orderStatus,
-                                     final RedirectAttributes redirectAttributes ) {
+    public ModelAndView changeOrderStatus( final @PathVariable Long orderId,
+                                           final @RequestParam OrderStatus orderStatus ) {
         Order order = orderDao.get(orderId)
                               .orElseThrow( NotFoundException.supplier( MessageFormat.format( PhoneShopMessages.ORDER_NOT_FOUND_BY_ID, orderId )));
+
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.getModel().put("order", order);
         if (order.getStatus() == OrderStatus.NEW) {
             orderService.changeOrderStatus(order, orderStatus);
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "Further status changes are forbidden");
+            modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+            modelAndView.getModel().put("errorMessage", "Further status changes are forbidden");
         }
-        return "redirect:/admin/orders/" + orderId;
+        modelAndView.setViewName("/admin/order");
+        return modelAndView;
     }
 }
