@@ -11,8 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
 
 @Controller
@@ -34,19 +36,21 @@ public class AdminOrderPageController {
 
     @PostMapping
     public ModelAndView changeOrderStatus( final @PathVariable Long orderId,
-                                           final @RequestParam OrderStatus orderStatus ) {
+                                           final @RequestParam OrderStatus orderStatus,
+                                           final HttpServletRequest request ) {
         Order order = orderDao.get(orderId)
                               .orElseThrow( NotFoundException.supplier( MessageFormat.format( PhoneShopMessages.ORDER_NOT_FOUND_BY_ID, orderId )));
 
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.getModel().put("order", order);
         if (order.getStatus() == OrderStatus.NEW) {
             orderService.changeOrderStatus(order, orderStatus);
+            modelAndView.setView(new RedirectView(request.getRequestURI()));
         } else {
             modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+            modelAndView.setViewName("admin/order");
+            modelAndView.getModel().put("order", order);
             modelAndView.getModel().put("errorMessage", "Further status changes are forbidden");
         }
-        modelAndView.setViewName("/admin/order");
         return modelAndView;
     }
 }
