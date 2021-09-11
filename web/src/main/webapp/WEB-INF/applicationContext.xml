@@ -7,4 +7,5 @@
     <context:property-placeholder location="WEB-INF/conf/application.properties"/>
     <import resource="classpath:context/applicationContext-core.xml"/>
     <import resource="classpath:context/applicationContext-demodata.xml"/>
+    <import resource="security.xml"/>
 </beans>
