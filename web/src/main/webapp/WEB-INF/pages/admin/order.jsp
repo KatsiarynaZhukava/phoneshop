@@ -2,13 +2,17 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
 
 <tags:master pageTitle="Order ${order.id}">
   <link rel="stylesheet" href="<c:url value="/resources/styles/adminOrder.css"/>">
   <div class="header-container">
-    <h5>Order number: ${order.id}</h5>
-    <p class="message">${errorMessage}</p>
-    <h5>Order status: ${order.status}</h5>
+      <tags:loginLinks/>
+    <div class="flex-container">
+      <h5>Order number: ${order.id}</h5>
+      <p class="message">${errorMessage}</p>
+      <h5>Order status: ${order.status}</h5>
+    </div>
   </div>
 
   <div class="container">
@@ -88,7 +92,9 @@
           <button type="submit" form="updateStatusForm" name="orderStatus" value="REJECTED" class="btn btn-primary control-button" style="display: ${(order.status eq 'REJECTED') or (order.status eq 'DELIVERED') ? "none" : "inline-block"}">
             Rejected
           </button>
-          <form id="updateStatusForm" method="post" action="<c:url value="/admin/orders/${order.id}"/>"/>
+          <form id="updateStatusForm" method="post" action="<c:url value="/admin/orders/${order.id}"/>">
+            <security:csrfInput/>
+          </form>
       </div>
   </div>
 </tags:master>

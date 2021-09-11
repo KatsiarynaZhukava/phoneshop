@@ -2,20 +2,24 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
 
 <tags:master pageTitle="Cart">
   <link rel="stylesheet" href="<c:url value="/resources/styles/cart.css"/>">
   <div class="header-container">
-    <div class="float-left">
-      <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
-    </div>
-    <div>
-      <h4 id="updateMessage" class="message">${updateMessage}</h4>
-    </div>
-    <div class="float-right">
-      <a href="<c:url value="/productList"/>">
-        <button class="btn btn-outline-primary">Back to product list</button>
-      </a>
+      <tags:loginLinks/>
+    <div class="flex-container">
+      <div class="float-left">
+        <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
+      </div>
+      <div>
+        <h4 id="updateMessage" class="message">${updateMessage}</h4>
+      </div>
+      <div class="float-right">
+        <a href="<c:url value="/productList"/>">
+          <button class="btn btn-outline-primary">Back to product list</button>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -67,6 +71,7 @@
         </table>
       <form id="deleteCartItemForm" method="post">
         <input type="hidden" name="_method" value="delete">
+        <security:csrfInput/>
       </form>
       <div id="cartButtonsContainer" class="float-right action-buttons-container">
           <div>

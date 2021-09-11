@@ -5,7 +5,12 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <tags:master pageTitle="Orders">
-  <div class="container">
+    <link rel="stylesheet" href="<c:url value="/resources/styles/adminOrders.css"/>">
+    <div class="header-container">
+    <tags:loginLinks/>
+  </div>
+
+  <div class="container admin-orders-container">
     <table class="table table-hover">
       <thead>
       <tr>

@@ -5,23 +5,26 @@
 <tags:master pageTitle="Products">
   <link rel="stylesheet" href="<c:url value="/resources/styles/productList.css"/>">
   <div class="header-container">
-    <div class="float-left">
-      <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
-    </div>
-    <div>
-      <h4 class="message">${orderErrorMessage}</h4>
-    </div>
-    <div class="float-right">
-      <form action = "${pageContext.request.contextPath}/productList">
-        <div class="row">
-          <div class="col">
-            <input name="searchQuery" value="${searchQuery}" class="form-control search-input">
+    <tags:loginLinks/>
+    <div class="flex-container">
+      <div class="float-left">
+        <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
+      </div>
+      <div>
+        <h4 class="message">${orderErrorMessage}</h4>
+      </div>
+      <div class="float-right">
+        <form action = "${pageContext.request.contextPath}/productList">
+          <div class="row">
+            <div class="col">
+              <input name="searchQuery" value="${searchQuery}" class="form-control search-input">
+            </div>
+            <div class="col">
+              <button type="submit" class="btn btn-outline-primary">Search</button>
+            </div>
           </div>
-          <div class="col">
-            <button type="submit" class="btn btn-outline-primary">Search</button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 

@@ -6,17 +6,18 @@
 <tags:master pageTitle="Product details">
   <link rel="stylesheet" href="<c:url value="/resources/styles/productDetails.css"/>">
   <div class="header-container">
-    <div class="float-left">
+    <tags:loginLinks/>
+    <div class="flex-container">
       <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
-    </div>
-    <div class="float-right">
-      <a href="<c:url value="/productList"/>">
-        <button class="btn btn-outline-primary">Back to product list</button>
-      </a>
+      <div class="float-right">
+        <a href="<c:url value="/productList"/>">
+          <button class="btn btn-outline-primary">Back to product list</button>
+        </a>
+      </div>
     </div>
   </div>
 
-  <div class="container">
+  <div class="container product-details-container">
     <div class="container-element">
       <div>
         <h2>${phone.model}</h2>
