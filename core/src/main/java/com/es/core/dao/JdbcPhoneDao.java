@@ -1,9 +1,11 @@
 package com.es.core.dao;
 
+import com.es.core.exception.MultipleResultValuesException;
 import com.es.core.model.phone.Color;
 import com.es.core.model.phone.Phone;
 import com.es.core.util.PhoneWithColorsExtractor;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -27,6 +29,8 @@ public class JdbcPhoneDao implements PhoneDao {
     private static final String UPDATE_PHONES_QUERY = "update phones set brand = ?, model = ?, price = ?, displaySizeInches = ?, weightGr = ?, lengthMm = ?, widthMm = ?, heightMm = ?, announced = ?, deviceType = ?, os = ?, displayResolution = ?, pixelDensity = ?, displayTechnology = ?, backCameraMegapixels = ?, frontCameraMegapixels = ?, ramGb = ?, internalStorageGb = ?, batteryCapacityMah = ?, talkTimeHours = ?, standByTimeHours = ?, bluetooth = ?, positioning = ?, imageUrl = ?, description = ? where id = ?";
     private static final String COUNT_PHONES_QUERY_PART = "select count(*) from phones ";
     private static final String POSITIVE_STOCK_NOT_NULL_PRICE_QUERY_PART = " (phones.id in (select phoneId from stocks where stock - reserved > 0)) and (price is not null)";
+    private static final String SELECT_PHONE_BY_MODEL = "select * from phones where model = ?";
+    private static final String SELECT_PHONES_BY_MODELS = "select * from phones where";
 
     @Resource
     private JdbcTemplate jdbcTemplate;
@@ -36,6 +40,8 @@ public class JdbcPhoneDao implements PhoneDao {
     private PhoneWithColorsExtractor phoneExtractor;
     @Resource
     private SingleColumnRowMapper<Long> longSingleColumnRowMapper;
+    @Resource
+    private BeanPropertyRowMapper<Phone> phoneBeanPropertyRowMapper;
     private SimpleJdbcInsert simpleJdbcInsert;
 
     @PostConstruct
@@ -48,6 +54,13 @@ public class JdbcPhoneDao implements PhoneDao {
     public Optional<Phone> get(final Long key) {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONES_QUERY + " where phones.id = ?",
                                                 new Object[]{key}, phoneExtractor);
+        return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
+    }
+
+    @Override
+    public Optional<Phone> getByModel( final String model ) throws MultipleResultValuesException {
+        List<Phone> phones = jdbcTemplate.query(SELECT_PHONE_BY_MODEL, new Object[]{model}, phoneBeanPropertyRowMapper);
+        if (phones.size() > 1) throw new MultipleResultValuesException("Multiple phone models found for the given value: {0}", model);
         return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
     }
 
@@ -110,6 +123,20 @@ public class JdbcPhoneDao implements PhoneDao {
         }
         sqlQuery.replace(sqlQuery.length() - 1, sqlQuery.length(), ")");
         return jdbcTemplate.query(sqlQuery.toString(), phoneIds.toArray(), phoneExtractor);
+    }
+
+    @Override
+    public List<Phone> findAllByModels( final List<String> models ) {
+        if (models == null || models.isEmpty()) return new ArrayList<>();
+        StringBuilder sqlQuery = new StringBuilder(SELECT_PHONES_BY_MODELS);
+        Map<String, Object> parameters = new HashMap<>();
+
+        for (int i = 0; i < models.size(); i++) {
+            sqlQuery.append(" lower(model) like lower(:model").append(i).append(") or");
+            parameters.put("model" + i, models.get(i).trim());
+        }
+        sqlQuery.replace(sqlQuery.length() - 3, sqlQuery.length(), "");
+        return namedParameterJdbcTemplate.query(sqlQuery.toString(), parameters, phoneBeanPropertyRowMapper);
     }
 
     @Override

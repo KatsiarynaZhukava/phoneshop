@@ -13,6 +13,11 @@
       <div>
         <h4 class="message">${orderErrorMessage}</h4>
       </div>
+
+      <div>
+        <a href="<c:url value="/quickOrder"/>">Quick order</a>
+      </div>
+
       <div class="float-right">
         <form action = "${pageContext.request.contextPath}/productList">
           <div class="row">
