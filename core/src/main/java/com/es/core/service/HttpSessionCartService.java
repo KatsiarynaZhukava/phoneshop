@@ -3,11 +3,13 @@ package com.es.core.service;
 import com.es.core.dao.PhoneDao;
 import com.es.core.dao.StockDao;
 import com.es.core.dto.output.CartTotalsOutputDto;
+import com.es.core.exception.NotFoundException;
 import com.es.core.exception.OutOfStockException;
 import com.es.core.exception.OutOfStockItem;
 import com.es.core.model.cart.Cart;
 import com.es.core.model.phone.Phone;
 import com.es.core.model.phone.Stock;
+import com.es.core.util.PhoneShopMessages;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.SessionScope;
 
@@ -151,5 +153,24 @@ public class HttpSessionCartService implements CartService {
     @Override
     public boolean isEmpty() {
         return cart.getItems().isEmpty();
+    }
+
+    @Override
+    public void checkIfStockExceeded( final String model, final Long requestedQuantity ) throws OutOfStockException {
+        Map<Long, Long> copyCartItems = new HashMap<>(cart.getItems());
+
+        Long phoneId = phoneDao.getByModel(model).orElseThrow(NotFoundException.supplier(
+                PhoneShopMessages.PHONE_NOT_FOUND_BY_MODEL_MESSAGE, model))
+                               .getId();
+        Stock stock = stockDao.get(phoneId).orElseThrow(NotFoundException.supplier(
+                PhoneShopMessages.STOCK_NOT_FOUND_BY_PHONE_ID, phoneId));
+
+        Long overallRequestedQuantity = requestedQuantity;
+        if (copyCartItems.containsKey(phoneId)) {
+            overallRequestedQuantity += copyCartItems.get(phoneId);
+        }
+        if (overallRequestedQuantity > stock.getStock() - stock.getReserved()) {
+            throw new OutOfStockException(phoneId, overallRequestedQuantity, stock.getStock() - stock.getReserved());
+        }
     }
 }

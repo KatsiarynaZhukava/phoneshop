@@ -8,7 +8,7 @@
   <div class="header-container">
     <tags:loginLinks/>
     <div class="flex-container">
-      <tags:cart totalQuantity="${cart.totalQuantity}" totalCost="${cart.totalCost}"/>
+      <tags:cart totalQuantity="${totalQuantity}" totalCost="${totalCost}"/>
       <div class="float-right">
         <a href="<c:url value="/productList"/>">
           <button class="btn btn-outline-primary">Back to product list</button>

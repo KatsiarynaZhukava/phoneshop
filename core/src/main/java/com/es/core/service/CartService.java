@@ -17,4 +17,5 @@ public interface CartService {
     BigDecimal getTotalCost(Map<Long, Long> cartItems);
     void clearCart(Map<Long, Long> cartItems);
     boolean isEmpty();
+    void checkIfStockExceeded(String model, Long requestedQuantity) throws OutOfStockException;
 }

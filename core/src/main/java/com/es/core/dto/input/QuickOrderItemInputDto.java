@@ -1,9 +1,17 @@
 package com.es.core.dto.input;
 
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 public class QuickOrderItemInputDto {
+    @NotEmpty
     private String model;
     private Long rowNumber;
+    @NotNull
+    @Min(value = 1)
     private Long requestedQuantity;
 
     public String getModel() { return model; }

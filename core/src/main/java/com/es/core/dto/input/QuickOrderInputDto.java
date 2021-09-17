@@ -1,10 +1,12 @@
 package com.es.core.dto.input;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
 public class QuickOrderInputDto {
     private static final Long MAX_CAPACITY = 10L;
+    @Valid
     private List<QuickOrderItemInputDto> items;
 
     public QuickOrderInputDto() {
@@ -15,6 +17,5 @@ public class QuickOrderInputDto {
     }
 
     public List<QuickOrderItemInputDto> getItems() { return items; }
-
     public void setItems(List<QuickOrderItemInputDto> items) { this.items = items; }
 }

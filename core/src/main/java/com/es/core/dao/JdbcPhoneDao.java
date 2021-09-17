@@ -1,6 +1,5 @@
 package com.es.core.dao;
 
-import com.es.core.exception.MultipleResultValuesException;
 import com.es.core.model.phone.Color;
 import com.es.core.model.phone.Phone;
 import com.es.core.util.PhoneWithColorsExtractor;
@@ -58,9 +57,8 @@ public class JdbcPhoneDao implements PhoneDao {
     }
 
     @Override
-    public Optional<Phone> getByModel( final String model ) throws MultipleResultValuesException {
+    public Optional<Phone> getByModel( final String model ) {
         List<Phone> phones = jdbcTemplate.query(SELECT_PHONE_BY_MODEL, new Object[]{model}, phoneBeanPropertyRowMapper);
-        if (phones.size() > 1) throw new MultipleResultValuesException("Multiple phone models found for the given value: {0}", model);
         return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
     }
 
